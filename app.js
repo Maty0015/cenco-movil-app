@@ -1,6 +1,12 @@
 // =========================================================================
-// 🚀 CONTROLADOR DE SEGURIDAD Y ACCESIBILIDAD - CENCO MOVIL
+// 🚀 CONTROLADOR DE SEGURIDAD, ACCESIBILIDAD Y CONEXIÓN - CENCO MOVIL
 // =========================================================================
+
+// --- CONFIGURACIÓN E INICIALIZACIÓN DE SUPABASE ---
+const SUPABASE_URL = "https://zxeslmngcrqtbolfkbvf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_5tU3B4kVQOBGy0pkXYhgcQ_iXi21B4O";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- VARIABLES DE ESTADO Y PANTALLAS ---
 const screenLogin = document.getElementById('screen-login');
@@ -16,7 +22,6 @@ window.handleLogin = function(e) {
     const email = document.getElementById('email').value.trim();
     const pass = document.getElementById('password').value;
 
-    // Validación estricta para el simulador ciudadano
     if (email === 'juan.perez@email.com' && pass === 'password123') {
         screenLogin.style.display = 'none';
         
@@ -47,9 +52,18 @@ window.checkFirstTime = function() {
     }
 };
 
+// CORREGIDO: Alterna display:none y display:flex por bloque para que los slides no colapsen en lista
 window.nextSlide = function(slideNumber) {
-    document.querySelectorAll('.onboarding-slide').forEach(s => s.classList.remove('active'));
-    document.getElementById(`slide-${slideNumber}`).classList.add('active');
+    document.querySelectorAll('.onboarding-slide').forEach(s => {
+        s.style.display = "none";
+        s.classList.remove('active');
+    });
+    
+    const targetSlide = document.getElementById(`slide-${slideNumber}`);
+    if (targetSlide) {
+        targetSlide.style.display = "flex";
+        targetSlide.classList.add('active');
+    }
 };
 
 window.finishOnboarding = function() {
@@ -85,24 +99,46 @@ window.cerrarModalConfirmarSOS = function() {
     document.getElementById('modal-confirmar-sos').style.display = "none";
 };
 
-// Gatilla la onda expansiva concéntrica continua al confirmar
-window.dispararAlertaOndaSOSReal = function() {
+// CORREGIDO: Envía un registro asíncrono real a Supabase con coordenadas de Concepción Centro
+window.dispararAlertaOndaSOSReal = async function() {
     window.cerrarModalConfirmarSOS();
 
     const onda1 = document.getElementById('wave-effect-1');
     const onda2 = document.getElementById('wave-effect-2');
 
-    // Encendemos y gatillamos animación elástica visual
+    // Encendemos y gatillamos la animación de onda expansiva
     onda1.style.display = "block";
     onda2.style.display = "block";
-
     onda1.style.animation = "expandirOndaSOS 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite";
-    // Desfase de la segunda ola para dar sensación de señal continua de radio fiscal
     setTimeout(() => {
-        onda2.style.animation = "expandirOndaSOS 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite";
+        if (onda2) onda2.style.animation = "expandirOndaSOS 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite";
     }, 400);
 
-    alert("🚨 SEÑAL SOS EMITIDA AL CENCO CON EXITO\nGeolocalización bloqueada de forma conforme. Enviando cuadrante más cercano de Carabineros.");
+    // Generar un folio único aleatorio para la emergencia (Ej: SOS-412)
+    const folioAleatorio = "SOS-" + Math.floor(100 + Math.random() * 900);
+
+    // Insertar reporte en la base de datos de Supabase en vivo
+    const { error } = await supabaseClient
+        .from('incidentes_cenco')
+        .insert([{
+            id: folioAleatorio,
+            usuario_id: "b2222222-2222-2222-2222-222222222222", // ID de Juan Pérez
+            nombre_usuario_anonimo: "Juan Pérez",
+            tipo_incidente: "Botón SOS",
+            categoria_tag: "SOS",
+            ubicacion_texto: "Barros Arana 500, Concepción Centro",
+            latitud: -36.82650000,
+            longitud: -73.05080000,
+            detalles_reporte: "Alerta de pánico activada en vivo desde dispositivo móvil por usuario con discapacidad auditiva.",
+            estado_procedimiento: "CRÍTICO"
+        }]);
+
+    if (error) {
+        alert("Error de transmisión de red: " + error.message);
+        return;
+    }
+
+    alert(`🚨 ¡ALERTA DESPACHADA! \nProcedimiento registrado bajo el folio fiscal ${folioAleatorio}.\nCarabineros ha recibido tu ubicación en Concepción Centro.`);
 };
 
 // --- MOTOR DE AJUSTES DE ACCESIBILIDAD ---
@@ -131,7 +167,7 @@ window.setAppTextSize = function(tamaño) {
     
     // Encendemos la bolita de verificación de la opción activa
     const targetCheck = document.getElementById(`chk-${tamaño}`);
-    if (targetCheck) targetCheck.classList.add('active');
+    if (targetCheck) targetCheck.add('active');
 
     // Traducimos el texto en el menú de perfil principal
     const labelMap = { 'pequeno': 'Pequeño', 'mediano': 'Mediano', 'grande': 'Grande', 'extra-grande': 'Extra Grande' };
