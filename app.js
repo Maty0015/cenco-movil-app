@@ -6,8 +6,62 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // --- ESTADO LOCAL DEL CIUDADANO AUTENTICADO ---
 let usuarioLogeado = null;
+let currentOnboardingStep = 0;
 
-// --- ENTRADA AL SISTEMA (LOGIN DIRECTO) ---
+// Configuración de los recursos del carrusel (Datos interactivos para el Onboarding)
+const onboardingData = [
+    {
+        title: "Bienvenido",
+        description: "Esta aplicación está diseñada para facilitar la comunicación entre personas sordas y Carabineros de Chile.",
+        videoBg: "url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=400&q=80')",
+        badge: "🛡️"
+    },
+    {
+        title: "Botón S.O.S.",
+        description: "Usa el botón S.O.S. rojo solo en caso de emergencia real. Enviará tu ubicación inmediata para recibir ayuda.",
+        videoBg: "url('https://images.unsplash.com/photo-1563453392212-326f5e854473?auto=format&fit=crop&w=400&q=80')",
+        badge: "⚠️"
+    },
+    {
+        title: "Videollamadas",
+        description: "Conéctate por videollamada con un intérprete de Lengua de Señas Chilena (LSCh) para trámites o consultas.",
+        videoBg: "url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=400&q=80')",
+        badge: "📹"
+    }
+];
+
+// --- LOGICA DE CONTROL DEL CARRUSEL (ONBOARDING) ---
+document.getElementById('btn-onboarding-next').addEventListener('click', () => {
+    currentOnboardingStep++;
+    
+    if (currentOnboardingStep < onboardingData.length) {
+        const step = onboardingData[currentOnboardingStep];
+        
+        // Actualizar textos e imágenes simuladas en el HTML
+        document.getElementById('onboarding-title').innerText = step.title;
+        document.getElementById('onboarding-description').innerText = step.description;
+        document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
+        document.getElementById('onboarding-icon-badge').innerText = step.badge;
+        
+        // Actualizar puntitos verdes indicadores de progreso
+        const dots = document.querySelectorAll('.carousel-indicators .dot');
+        dots.forEach((dot, index) => {
+            if (index === currentOnboardingStep) dot.classList.add('active');
+            else dot.classList.remove('active');
+        });
+
+        // Si llegamos a la última pantalla, el botón cambia para finalizar
+        if (currentOnboardingStep === onboardingData.length - 1) {
+            document.getElementById('btn-onboarding-next').innerHTML = "Comenzar &check;";
+        }
+    } else {
+        // Fin del carrusel -> Transición SPA hacia la pantalla de Login
+        document.getElementById('screen-onboarding').style.display = "none";
+        document.getElementById('screen-login').style.display = "flex";
+    }
+});
+
+// --- ENTRADA AL SISTEMA (LOGIN) ---
 document.getElementById('form-login-ciudadano').addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailStr = document.getElementById('app-email').value.trim();
@@ -36,7 +90,7 @@ document.getElementById('form-login-ciudadano').addEventListener('submit', async
         document.getElementById('screen-login').style.display = "none";
         document.getElementById('app-main-layout').style.display = "flex";
         
-        // Cargar la pestaña de emergencias por defecto
+        // Cargar la pestaña de emergencies por defecto
         window.switchTabView('emergencias');
     } else {
         alert("Credenciales digitales inválidas para emergencias.");
@@ -127,12 +181,22 @@ window.conmutarAltoContraste = function(checkbox) {
 // --- CONTROL DE SESIÓN ---
 window.cerrarSesionApp = function() {
     usuarioLogeado = null;
+    currentOnboardingStep = 0;
     
-    // Limpiar los campos del formulario de entrada
-    document.getElementById('app-email').value = "juan.perez@email.com";
-    document.getElementById('app-pass').value = "password123";
+    // Al cerrar sesión, la SPA retorna ordenadamente al paso 1 del Onboarding
+    document.getElementById('onboarding-title').innerText = onboardingData[0].title;
+    document.getElementById('onboarding-description').innerText = onboardingData[0].description;
+    document.getElementById('onboarding-bg-video').style.backgroundImage = onboardingData[0].videoBg;
+    document.getElementById('onboarding-icon-badge').innerText = onboardingData[0].badge;
+    document.getElementById('btn-onboarding-next').innerHTML = "Siguiente &rsaquo;";
     
-    // Retornar SPA a la pantalla de autenticación
+    const dots = document.querySelectorAll('.carousel-indicators .dot');
+    dots.forEach((dot, idx) => idx === 0 ? dot.classList.add('active') : dot.classList.remove('active'));
+
+    // Reordenar visibilidad de contenedores principales
     document.getElementById('app-main-layout').style.display = "none";
-    document.getElementById('screen-login').style.display = "flex";
+    document.getElementById('screen-onboarding').style.display = "flex";
 };
+
+// Carga asíncrona de la primera foto de fondo para el visor de video simulado
+document.getElementById('onboarding-bg-video').style.backgroundImage = onboardingData[0].videoBg;
