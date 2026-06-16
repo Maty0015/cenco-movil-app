@@ -1,5 +1,5 @@
 // =========================================================================
-// 🚀 CONTROLADOR DE SEGURIDAD, ACCESIBILIDAD Y CONEXIÓN - CENCO MOVIL
+// 🚀 CONTROLADOR DE SEGURIDAD, ACCESIBILIDAD Y ENRUTAMIENTO NATIVO - CENCO
 // =========================================================================
 
 const SUPABASE_URL = "https://zxeslmngcrqtbolfkbvf.supabase.co";
@@ -7,6 +7,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_5tU3B4kVQOBGy0pkXYhgcQ_iXi21B4O";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+// --- SELECCIÓN DE PANTALLAS PRINCIPALES COHERENTES ---
 const screenLogin = document.getElementById('screen-login');
 const screenOnboarding = document.getElementById('screen-onboarding');
 const screenMain = document.getElementById('screen-main');
@@ -14,7 +15,7 @@ const screenMain = document.getElementById('screen-main');
 const subConfigTexto = document.getElementById('screen-config-texto');
 const subConfigNotificaciones = document.getElementById('screen-config-notificaciones');
 
-// --- ENRUTADOR DE ACCESO PROBADO ---
+// --- FILTRO DE ENTRADA AL SISTEMA ---
 window.handleLogin = function(e) {
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
@@ -23,7 +24,7 @@ window.handleLogin = function(e) {
     if (email === 'juan.perez@email.com' && pass === 'password123') {
         screenLogin.style.display = 'none';
         
-        // Cargar preferencias del ciudadano
+        // Cargar parámetros de accesibilidad
         const tamañoGuardado = localStorage.getItem('appTextSize') || 'grande';
         window.setAppTextSize(tamañoGuardado);
 
@@ -35,7 +36,7 @@ window.handleLogin = function(e) {
 
         window.checkFirstTime();
     } else {
-        alert("🚨 Credenciales de acceso incorrectas.\nUse juan.perez@email.com / password123");
+        alert("🚨 Credenciales incorrectas.\nUse: juan.perez@email.com / password123");
     }
 };
 
@@ -46,11 +47,11 @@ window.checkFirstTime = function() {
         window.switchSubView('emergencia');
     } else {
         screenOnboarding.style.display = 'flex';
-        window.nextSlide(1); // CORREGIDO: Fuerza a renderizar el slide inicial
+        window.nextSlide(1); // Despliega primer slide
     }
 };
 
-// CORREGIDO: Activa de manera estricta el bloque flex para pasar la pantalla de bienvenida
+// Mapeo elástico para pasar sliders limpiamente
 window.nextSlide = function(slideNumber) {
     document.querySelectorAll('.onboarding-slide').forEach(s => {
         s.style.display = "none";
@@ -71,22 +72,29 @@ window.finishOnboarding = function() {
     window.switchSubView('emergencia');
 };
 
+// CORREGIDO: Enrutador SPA de 3 vías con soporte nativo para Videollamadas (Figma image_cfdfc4)
 window.switchSubView = function(vista) {
     document.getElementById('subview-emergencia').style.display = "none";
+    document.getElementById('subview-video').style.display = "none";
     document.getElementById('subview-perfil').style.display = "none";
     
     document.getElementById('nav-btn-emergencia').classList.remove('active');
+    document.getElementById('nav-btn-video').classList.remove('active');
     document.getElementById('nav-btn-perfil').classList.remove('active');
 
     if (vista === 'emergencia') {
         document.getElementById('subview-emergencia').style.display = "block";
         document.getElementById('nav-btn-emergencia').classList.add('active');
+    } else if (vista === 'video') {
+        document.getElementById('subview-video').style.display = "block";
+        document.getElementById('nav-btn-video').classList.add('active');
     } else if (vista === 'perfil') {
         document.getElementById('subview-perfil').style.display = "block";
         document.getElementById('nav-btn-perfil').classList.add('active');
     }
 };
 
+// --- EMISIÓN GEOLOCALIZADA REAL COMPARTIDA CON EL DASHBOARD ---
 window.abrirFiltroConfirmacionSOS = function() {
     document.getElementById('modal-confirmar-sos').style.display = "flex";
 };
@@ -95,44 +103,49 @@ window.cerrarModalConfirmarSOS = function() {
     document.getElementById('modal-confirmar-sos').style.display = "none";
 };
 
-window.dispararAlertaOndaSOSReal = async function() {
+window.dispararAlertaOndaSOSReal = function() {
     window.cerrarModalConfirmarSOS();
 
     const onda1 = document.getElementById('wave-effect-1');
     const onda2 = document.getElementById('wave-effect-2');
+    if(onda1) { onda1.style.display = "block"; onda1.style.animation = "expandirOndaSOS 1.4s infinite"; }
+    setTimeout(() => { if (onda2) { onda2.style.display = "block"; onda2.style.animation = "expandirOndaSOS 1.4s infinite"; } }, 400);
 
-    onda1.style.display = "block";
-    onda2.style.display = "block";
-    onda1.style.animation = "expandirOndaSOS 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite";
-    setTimeout(() => {
-        if (onda2) onda2.style.animation = "expandirOndaSOS 1.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite";
-    }, 400);
+    // Intentar capturar la ubicación por GPS real del dispositivo móvil
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(async (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            const folioAleatorio = "SOS-" + Math.floor(100 + Math.random() * 900);
 
-    const folioAleatorio = "SOS-" + Math.floor(100 + Math.random() * 900);
+            // Inserción en vivo en tu tabla compartida perfiles / incidentes
+            const { error } = await supabaseClient
+                .from('incidentes_cenco')
+                .insert([{
+                    id: folioAleatorio,
+                    usuario_id: "b2222222-2222-2222-2222-222222222222", // ID estricto de Juan Pérez
+                    nombre_usuario_anonimo: "Juan Pérez",
+                    tipo_incidente: "Botón SOS",
+                    categoria_tag: "SOS",
+                    ubicacion_texto: `GPS Celular Real (Lat: ${lat.toFixed(4)}, Lng: ${lng.toFixed(4)})`,
+                    latitud: lat,
+                    longitud: lng,
+                    detalles_reporte: "Alerta de pánico activada en vivo desde dispositivo móvil por usuario con discapacidad auditiva.",
+                    estado_procedimiento: "CRÍTICO" // Pinta de rojo parpadeante tu panel de control de inmediato
+                }]);
 
-    const { error } = await supabaseClient
-        .from('incidentes_cenco')
-        .insert([{
-            id: folioAleatorio,
-            usuario_id: "b2222222-2222-2222-2222-222222222222",
-            nombre_usuario_anonimo: "Juan Pérez",
-            tipo_incidente: "Botón SOS",
-            categoria_tag: "SOS",
-            ubicacion_texto: "Barros Arana 500, Concepción Centro",
-            latitud: -36.82650000,
-            longitud: -73.05080000,
-            detalles_reporte: "Alerta de pánico activada en vivo desde dispositivo móvil por usuario con discapacidad auditiva.",
-            estado_procedimiento: "CRÍTICO"
-        }]);
+            if (error) return alert("Error de transmisión: " + error.message);
+            alert(`🚨 ¡ALERTA DESPACHADA CON ÉXITO! \nFolio de emergencia: ${folioAleatorio}.\nTu ubicación GPS real ha sido enviada a la Central de Carabineros.`);
 
-    if (error) {
-        alert("Error de transmisión de red: " + error.message);
-        return;
+        }, () => {
+            alert("No se pudo acceder al GPS. Por favor activa los permisos de geolocalización del celular.");
+        }, { enableHighAccuracy: true });
+    } else {
+        alert("Geolocalización no soportada en este dispositivo.");
     }
-
-    alert(`🚨 ¡ALERTA DESPACHADA! \nProcedimiento registrado bajo el folio fiscal ${folioAleatorio}.\nCarabineros ha recibido tu ubicación en Concepción Centro.`);
 };
 
+// --- CONFIGURACIONES ACCESIBILIDAD ---
 window.cambiarSubPantallaPerfil = function(idPantalla) {
     document.getElementById(idPantalla).style.display = "flex";
 };
@@ -152,7 +165,6 @@ window.setAppTextSize = function(tamaño) {
     document.body.classList.add(`text-size-${tamaño}`);
 
     document.querySelectorAll('.check-circle-indicator').forEach(chk => chk.classList.remove('active'));
-    
     const targetCheck = document.getElementById(`chk-${tamaño}`);
     if (targetCheck) targetCheck.add('active');
 

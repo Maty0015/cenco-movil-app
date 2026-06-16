@@ -20,6 +20,7 @@
         <div class="login-body">
             <h2>Iniciar Sesión</h2>
             <p class="subtitle">Ingresa tus credenciales para continuar</p>
+            
             <form onsubmit="window.handleLogin(event)">
                 <div class="input-group">
                     <label>Correo Electrónico</label>
@@ -33,9 +34,10 @@
                     <div class="input-with-icon">
                         <i class="fa-solid fa-lock"></i>
                         <input type="password" id="password" value="password123" required>
+                        <i class="fa-regular fa-eye eye-toggle-icon"></i>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary" style="margin-bottom: 20px;">Iniciar Sesión</button>
+                <button type="submit" class="btn-primary">Iniciar Sesión</button>
             </form>
 
             <div class="test-credentials-box">
@@ -49,9 +51,9 @@
 
     <div id="screen-onboarding" class="app-screen" style="display: none;">
         
-        <div class="onboarding-slide active" id="slide-1">
+        <div class="onboarding-slide" id="slide-1" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop');">
-                <div class="img-badge">🛡️</div>
+                <div class="img-badge border-green">🛡️</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                 <div class="video-label"><i class="fa-solid fa-video"></i> Video en LSCh</div>
             </div>
@@ -65,7 +67,7 @@
 
         <div class="onboarding-slide" id="slide-2" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1543165365-072ca2628d0f?q=80&w=1000&auto=format&fit=crop');">
-                <div class="img-badge error">⚠️</div>
+                <div class="img-badge border-red">⚠️</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                 <div class="video-label"><i class="fa-solid fa-video"></i> Video en LSCh</div>
             </div>
@@ -79,7 +81,7 @@
 
         <div class="onboarding-slide" id="slide-3" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000&auto=format&fit=crop');">
-                <div class="img-badge info">📹</div>
+                <div class="img-badge border-blue">📹</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                 <div class="video-label"><i class="fa-solid fa-video"></i> Video en LSCh</div>
             </div>
@@ -100,7 +102,7 @@
             </div>
         </header>
 
-        <div id="subview-emergencia" class="subview-container">
+        <div id="subview-emergencia" class="subview-container" style="display: none;">
             <div class="emergency-title">
                 <h2>Centro de Emergencias</h2>
                 <p>Presione el botón en caso de peligro inminente.</p>
@@ -138,9 +140,40 @@
             </div>
         </div>
 
+        <div id="subview-video" class="subview-container" style="display: none; padding: 20px 0;">
+            <div class="video-view-header">
+                <h2>Videollamadas</h2>
+                <p>Comuníquese en Lengua de Señas Chilena (LSCh) con un intérprete o funcionario capacitado.</p>
+            </div>
+
+            <div class="join-video-box-card">
+                <div class="video-card-inner-icon"><i class="fa-solid fa-video"></i></div>
+                <h3>Unirse a Videollamada</h3>
+                <p>Hablar con un operador ahora</p>
+                <span class="online-interpreter-badge">● Intérpretes disponibles</span>
+            </div>
+
+            <div class="action-card" style="margin: 20px; width: auto;">
+                <div class="card-icon schedule">📅</div>
+                <div class="card-text">
+                    <h3>Reservar una Hora</h3>
+                    <p>Programar videollamada</p>
+                    <div class="sub-badges-row-container">
+                        <span class="mini-card-pill">🕒 Trámites</span>
+                        <span class="mini-card-pill">👤 Consultas</span>
+                    </div>
+                </div>
+                <i class="fa-solid fa-circle-info card-info-icon"></i>
+            </div>
+
+            <div class="footer-privacy-box-notice">
+                <p><i class="fa-solid fa-video-slash"></i> Las videollamadas son estrictamente confidenciales. Si está en peligro, por favor regrese a la pestaña de <b>Emergencias</b> y presione S.O.S.</p>
+            </div>
+        </div>
+
         <div id="subview-perfil" class="subview-container" style="display: none; padding: 20px;">
             <div class="profile-header">
-                <div class="profile-avatar">👤</div>
+                <div class="profile-avatar"><i class="fa-solid fa-circle-user"></i></div>
                 <div>
                     <h2>Juan Pérez</h2>
                     <p class="profile-rut">RUT: 12.345.678-9</p>
@@ -171,14 +204,16 @@
                 <i class="fa-solid fa-chevron-right arrow-indicator"></i>
             </div>
 
-            <div class="logout-container-box">
-                <button onclick="window.logoutApp()" class="btn-logout-trigger">🚪 Cerrar Sesión</button>
+            <div class="logout-link-container-center">
+                <button onclick="window.logoutApp()" class="btn-logout-link-action">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Cerrar Sesión
+                </button>
             </div>
         </div>
 
         <nav class="bottom-nav">
-            <a href="#" id="nav-btn-emergencia" class="nav-item active" onclick="window.switchSubView('emergencia')"><i class="fa-solid fa-circle-exclamation"></i><span>Emergencias</span></a>
-            <a href="#" id="nav-btn-video" class="nav-item"><i class="fa-solid fa-video"></i><span>Videollamada</span></a>
+            <a href="#" id="nav-btn-emergencia" class="nav-item" onclick="window.switchSubView('emergencia')"><i class="fa-solid fa-circle-exclamation"></i><span>Emergencias</span></a>
+            <a href="#" id="nav-btn-video" class="nav-item" onclick="window.switchSubView('video')"><i class="fa-solid fa-video"></i><span>Videollamada</span></a>
             <a href="#" id="nav-btn-perfil" class="nav-item" onclick="window.switchSubView('perfil')"><i class="fa-solid fa-user"></i><span>Mi Perfil</span></a>
         </nav>
     </div>
@@ -193,6 +228,7 @@
             <div class="option-row" onclick="window.setAppTextSize('mediano')"><span style="font-size:17px;">Aa Mediano</span><div class="check-circle-indicator" id="chk-mediano"></div></div>
             <div class="option-row" onclick="window.setAppTextSize('grande')"><span style="font-size:22px;">Aa Grande</span><div class="check-circle-indicator" id="chk-grande"></div></div>
             <div class="option-row" onclick="window.setAppTextSize('extra-grande')"><span style="font-size:26px;">Aa Extra Grande</span><div class="check-circle-indicator" id="chk-extra-grande"></div></div>
+            <p class="footer-notice-text">El tamaño de texto se aplicará en toda la aplicación</p>
         </div>
     </div>
 
@@ -202,14 +238,21 @@
             <h2>Notificaciones</h2>
         </div>
         <div class="sub-config-body">
+            <h4 class="section-divider-title">AJUSTES GENERALES</h4>
             <div class="menu-list-item-clean">
                 <div class="item-icon-clean icon-blue-light">🔔</div>
                 <div class="item-text"><h3>Notificaciones Push</h3><p>Permitir notificaciones de la app</p></div>
                 <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
             </div>
+            <h4 class="section-divider-title">ALERTAS SENSORIALES</h4>
             <div class="menu-list-item-clean">
                 <div class="item-icon-clean icon-blue-light">📱</div>
                 <div class="item-text"><h3>Vibración Fuerte</h3><p>Vibrar al recibir alertas</p></div>
+                <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
+            </div>
+            <div class="menu-list-item-clean">
+                <div class="item-icon-clean icon-yellow-light">⚡</div>
+                <div class="item-text"><h3>Alertas Luminosas</h3><p>Usar flash de la cámara para avisos</p></div>
                 <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
             </div>
         </div>
@@ -229,5 +272,7 @@
         </div>
     </div>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
 </body>
 </html>
