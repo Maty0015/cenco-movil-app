@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Carabineros de Chile - Acceso Inclusivo</title>
+    <title>Carabineros - Solo Login</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🛡️</text></svg>">
 </head>
 <body>
 
@@ -20,12 +19,12 @@
             <h2>Iniciar Sesión</h2>
             <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
             
-            <form id="form-login-ciudadano" onsubmit="window.procesarLoginMovil(event)">
+            <form id="form-login-ciudadano" onsubmit="window.testLoginPasoAPaso(event)">
                 <div class="input-app-group">
                     <label>Correo Electrónico</label>
                     <div class="input-with-icon">
                         <span class="field-icon">✉️</span>
-                        <input type="email" id="app-email" required placeholder="tu@correo.com" value="juan.perez@email.com">
+                        <input type="email" id="app-email" required value="juan.perez@email.com">
                     </div>
                 </div>
                 
@@ -33,11 +32,11 @@
                     <label>Contraseña</label>
                     <div class="input-with-icon">
                         <span class="field-icon">🔒</span>
-                        <input type="password" id="app-pass" required placeholder="••••••••" value="cenco2026">
+                        <input type="password" id="app-pass" required value="cenco2026">
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-primary-app btn-login">Iniciar Sesión</button>
+                <button type="submit" class="btn-primary-app">Iniciar Sesión</button>
             </form>
             
             <div class="test-credentials-alert">
@@ -45,162 +44,7 @@
                 <p>Email: <code>juan.perez@email.com</code></p>
                 <p>Contraseña: <code>cenco2026</code></p>
             </div>
-            
-            <a href="#" class="login-support-link" onclick="alert('Contactando a soporte técnico...')">¿Necesitas ayuda? Contacta a soporte técnico</a>
         </div>
-    </div>
-
-    <div id="screen-onboarding" class="app-screen" style="display: none;">
-        <div class="onboarding-card">
-            <div class="video-container" id="onboarding-bg-video" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=400&q=80');">
-                <span class="badge-video">📹 Video en LSCh</span>
-                <button class="btn-play-simulated">▶</button>
-                <div class="top-right-icon-onboarding" id="onboarding-icon-badge">🛡️</div>
-            </div>
-            
-            <div class="onboarding-content">
-                <h2 id="onboarding-title">Bienvenido</h2>
-                <p id="onboarding-description">Esta aplicación está diseñada para facilitar la comunicación entre personas sordas y Carabineros de Chile.</p>
-                
-                <div class="carousel-indicators">
-                    <span class="dot active"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                </div>
-                
-                <button class="btn-primary-app" id="btn-onboarding-next">Siguiente &rsaquo;</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="app-main-layout" style="display: none;">
-        
-        <header class="app-header-green">
-            <div class="header-content">
-                <span class="institucional-logo-small">🛡️</span>
-                <span>Carabineros de Chile</span>
-            </div>
-        </header>
-
-        <main class="app-viewport-content">
-            
-            <section id="view-emergencias" class="tab-view">
-                <div class="view-header-center">
-                    <h1>Centro de Emergencias</h1>
-                    <p>Presione el botón en caso de peligro inminente.</p>
-                </div>
-
-                <div class="sos-container">
-                    <button class="btn-sos-trigger" onclick="window.activarBotonPanicoSOS()">
-                        <div class="sos-graphic">⚠️</div>
-                        <span class="sos-text-main">S.O.S.</span>
-                        <span class="sos-text-sub">AYUDA INMEDIATA</span>
-                    </button>
-                </div>
-
-                <div class="options-list">
-                    <div class="option-item" onclick="alert('Módulo de reporte disponible en la siguiente fase.')">
-                        <div class="option-icon bg-light-orange">📝</div>
-                        <div class="option-text">
-                            <h3>Reportar Delito Menor</h3>
-                            <p>Robos, daños, extravíos. Sin riesgo vital.</p>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-
-                    <div class="option-item" onclick="alert('Consultando bitácora en Supabase...')">
-                        <div class="option-icon bg-light-blue">🕒</div>
-                        <div class="option-text">
-                            <h3>Historial de Envíos</h3>
-                            <p>Ver S.O.S. y reportes anteriores.</p>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                </div>
-            </section>
-
-            <section id="view-videollamada" class="tab-view" style="display: none;">
-                <div class="view-header-left">
-                    <h1>Videollamadas</h1>
-                    <p>Comuníquese en Lengua de Señas Chilena (LSCh) con un intérprete o funcionario capacitado.</p>
-                </div>
-
-                <div class="videocall-main-card" onclick="alert('Estableciendo conexión WebRTC con CENCO...')">
-                    <div class="videocall-icon-large">📹</div>
-                    <h2>Unirse a Videollamada</h2>
-                    <p>Hablar con un operador ahora</p>
-                    <span class="status-online">● Intérpretes disponibles</span>
-                </div>
-
-                <div class="options-list" style="margin-top: 20px;">
-                    <div class="option-item" onclick="alert('Módulo de agenda deshabilitado en modo demo.')">
-                        <div class="option-icon bg-light-green">📅</div>
-                        <div class="option-text">
-                            <h3>Reservar una Hora</h3>
-                            <p>Programar videollamada</p>
-                        </div>
-                        <span class="arrow-icon">›</span>
-                    </div>
-                </div>
-
-                <div class="info-box-gray">
-                    <p>🔒 Las videollamadas son estrictamente confidenciales. Si está en peligro, por favor regrese a la pestaña de Emergencias y presione S.O.S.</p>
-                </div>
-            </section>
-
-            <section id="view-perfil" class="tab-view" style="display: none;">
-                <div class="profile-header-card">
-                    <div class="profile-avatar-placeholder">👤</div>
-                    <div class="profile-data">
-                        <h2 id="profile-user-name">Juan Pérez</h2>
-                        <p id="profile-user-rut">RUT: --.---.---.-</p>
-                    </div>
-                </div>
-
-                <h3 class="section-title">AJUSTES DE ACCESIBILIDAD</h3>
-                <div class="options-list">
-                    <div class="option-item">
-                        <div class="option-icon bg-light-purple">👁️</div>
-                        <div class="option-text">
-                            <h3>Tamaño de Texto</h3>
-                            <p id="label-text-size">Grande</p>
-                        </div>
-                        <span class="arrow-icon" style="cursor: pointer;" onclick="window.cambiarTamanoTexto()">›</span>
-                    </div>
-
-                    <div class="option-item">
-                        <div class="option-icon bg-light-pink">🌗</div>
-                        <div class="option-text">
-                            <h3>Alto Contraste</h3>
-                            <p>Mayor contraste visual</p>
-                        </div>
-                        <label class="toggle-control">
-                            <input type="checkbox" id="toggle-high-contrast" onchange="window.conmutarAltoContraste(this)">
-                            <span class="control-slider round"></span>
-                        </label>
-                    </div>
-                </div>
-
-                <button class="btn-logout" onclick="window.cerrarSesionApp()">➔ Cerrar Sesión</button>
-            </section>
-
-        </main>
-
-        <nav class="app-navbar-bottom">
-            <button class="navbar-item active" id="tab-emergencias" onclick="window.switchTabView('emergencias')">
-                <span class="nav-icon">⚠️</span>
-                <span class="nav-text">Emergencias</span>
-            </button>
-            <button class="navbar-item" id="tab-videollamada" onclick="window.switchTabView('videollamada')">
-                <span class="nav-icon">📹</span>
-                <span class="nav-text">Videollamada</span>
-            </button>
-            <button class="navbar-item" id="tab-perfil" onclick="window.switchTabView('perfil')">
-                <span class="nav-icon">👤</span>
-                <span class="nav-text">Mi Perfil</span>
-            </button>
-        </nav>
-
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
