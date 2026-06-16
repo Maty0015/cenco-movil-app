@@ -1,5 +1,5 @@
 // =========================================================================
-// 🚀 CONTROLADOR DE SEGURIDAD, ACCESIBILIDAD Y ENRUTAMIENTO NATIVO - CENCO
+// 🚀 CONTROLADOR DE SEGURIDAD, ACCESIBILIDAD Y CONEXIÓN - CENCO MOVIL
 // =========================================================================
 
 const SUPABASE_URL = "https://zxeslmngcrqtbolfkbvf.supabase.co";
@@ -7,7 +7,6 @@ const SUPABASE_ANON_KEY = "sb_publishable_5tU3B4kVQOBGy0pkXYhgcQ_iXi21B4O";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- SELECCIÓN DE PANTALLAS PRINCIPALES COHERENTES ---
 const screenLogin = document.getElementById('screen-login');
 const screenOnboarding = document.getElementById('screen-onboarding');
 const screenMain = document.getElementById('screen-main');
@@ -15,7 +14,7 @@ const screenMain = document.getElementById('screen-main');
 const subConfigTexto = document.getElementById('screen-config-texto');
 const subConfigNotificaciones = document.getElementById('screen-config-notificaciones');
 
-// --- FILTRO DE ENTRADA AL SISTEMA ---
+// --- ENRUTADOR DE ACCESO PROBADO ---
 window.handleLogin = function(e) {
     e.preventDefault();
     const email = document.getElementById('email').value.trim();
@@ -47,11 +46,10 @@ window.checkFirstTime = function() {
         window.switchSubView('emergencia');
     } else {
         screenOnboarding.style.display = 'flex';
-        window.nextSlide(1); // Despliega primer slide
+        window.nextSlide(1); 
     }
 };
 
-// Mapeo elástico para pasar sliders limpiamente
 window.nextSlide = function(slideNumber) {
     document.querySelectorAll('.onboarding-slide').forEach(s => {
         s.style.display = "none";
@@ -72,7 +70,7 @@ window.finishOnboarding = function() {
     window.switchSubView('emergencia');
 };
 
-// CORREGIDO: Enrutador SPA de 3 vías con soporte nativo para Videollamadas (Figma image_cfdfc4)
+// Alternador SPA de 3 vías con soporte nativo para todas las pestañas
 window.switchSubView = function(vista) {
     document.getElementById('subview-emergencia').style.display = "none";
     document.getElementById('subview-video').style.display = "none";
@@ -94,7 +92,7 @@ window.switchSubView = function(vista) {
     }
 };
 
-// --- EMISIÓN GEOLOCALIZADA REAL COMPARTIDA CON EL DASHBOARD ---
+// --- EMISIÓN GEOLOCALIZADA REAL ---
 window.abrirFiltroConfirmacionSOS = function() {
     document.getElementById('modal-confirmar-sos').style.display = "flex";
 };
@@ -111,19 +109,17 @@ window.dispararAlertaOndaSOSReal = function() {
     if(onda1) { onda1.style.display = "block"; onda1.style.animation = "expandirOndaSOS 1.4s infinite"; }
     setTimeout(() => { if (onda2) { onda2.style.display = "block"; onda2.style.animation = "expandirOndaSOS 1.4s infinite"; } }, 400);
 
-    // Intentar capturar la ubicación por GPS real del dispositivo móvil
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(async (position) => {
             const lat = position.coords.latitude;
             const lng = position.coords.longitude;
             const folioAleatorio = "SOS-" + Math.floor(100 + Math.random() * 900);
 
-            // Inserción en vivo en tu tabla compartida perfiles / incidentes
             const { error } = await supabaseClient
                 .from('incidentes_cenco')
                 .insert([{
                     id: folioAleatorio,
-                    usuario_id: "b2222222-2222-2222-2222-222222222222", // ID estricto de Juan Pérez
+                    usuario_id: "b2222222-2222-2222-2222-222222222222",
                     nombre_usuario_anonimo: "Juan Pérez",
                     tipo_incidente: "Botón SOS",
                     categoria_tag: "SOS",
@@ -131,7 +127,7 @@ window.dispararAlertaOndaSOSReal = function() {
                     latitud: lat,
                     longitud: lng,
                     detalles_reporte: "Alerta de pánico activada en vivo desde dispositivo móvil por usuario con discapacidad auditiva.",
-                    estado_procedimiento: "CRÍTICO" // Pinta de rojo parpadeante tu panel de control de inmediato
+                    estado_procedimiento: "CRÍTICO" 
                 }]);
 
             if (error) return alert("Error de transmisión: " + error.message);
