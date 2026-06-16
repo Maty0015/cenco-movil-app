@@ -35,15 +35,22 @@
                         <input type="password" id="password" value="password123" required>
                     </div>
                 </div>
-                <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                <button type="submit" class="btn-primary" style="margin-bottom: 20px;">Iniciar Sesión</button>
             </form>
+
+            <div class="test-credentials-box">
+                <h4>Credenciales de prueba:</h4>
+                <p>Email: <span>juan.perez@email.com</span></p>
+                <p>Contraseña: <span>password123</span></p>
+            </div>
+            <p class="help-notice-text">¿Necesitas ayuda? Contacta a soporte técnico</p>
         </div>
     </div>
 
     <div id="screen-onboarding" class="app-screen" style="display: none;">
-        <div class="onboarding-slide active" id="slide-1">
+        <div class="onboarding-slide" id="slide-1">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop');">
-                <div class="img-badge"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="img-badge">🛡️</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                 <div class="video-label"><i class="fa-solid fa-video"></i> Video en LSCh</div>
             </div>
@@ -54,9 +61,9 @@
                 <button onclick="window.nextSlide(2)" class="btn-primary">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
-        <div class="onboarding-slide" id="slide-2">
+        <div class="onboarding-slide" id="slide-2" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1543165365-072ca2628d0f?q=80&w=1000&auto=format&fit=crop');">
-                <div class="img-badge error"><i class="fa-solid fa-triangle-exclamation"></i></div>
+                <div class="img-badge error">⚠️</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                 <div class="video-label"><i class="fa-solid fa-video"></i> Video en LSCh</div>
             </div>
@@ -67,9 +74,9 @@
                 <button onclick="window.nextSlide(3)" class="btn-primary">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
-        <div class="onboarding-slide" id="slide-3">
+        <div class="onboarding-slide" id="slide-3" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000&auto=format&fit=crop');">
-                <div class="img-badge info"><i class="fa-solid fa-video"></i></div>
+                <div class="img-badge info">📹</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
                 <div class="video-label"><i class="fa-solid fa-video"></i> Video en LSCh</div>
             </div>
@@ -130,7 +137,7 @@
 
         <div id="subview-perfil" class="subview-container" style="display: none; padding: 20px;">
             <div class="profile-header">
-                <div class="profile-avatar"><i class="fa-solid fa-circle-user"></i></div>
+                <div class="profile-avatar">👤</div>
                 <div>
                     <h2>Juan Pérez</h2>
                     <p class="profile-rut">RUT: 12.345.678-9</p>
@@ -211,18 +218,6 @@
                 <div class="item-text"><h3>Alertas Luminosas</h3><p>Usar flash de la cámara para avisos</p></div>
                 <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
             </div>
-
-            <h4 class="section-divider-title">TIPOS DE NOTIFICACIÓN</h4>
-            <div class="menu-list-item-clean">
-                <div class="item-icon-clean icon-red-light">⚠️</div>
-                <div class="item-text"><h3>Emergencias Activas</h3><p>Actualizaciones de reportes</p></div>
-                <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
-            </div>
-            <div class="menu-list-item-clean">
-                <div class="item-icon-clean icon-purple-light">📹</div>
-                <div class="item-text"><h3>Videollamadas</h3><p>Llamadas entrantes y agendadas</p></div>
-                <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
-            </div>
         </div>
     </div>
 
@@ -240,7 +235,5 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="app.js"></script>
 </body>
 </html>

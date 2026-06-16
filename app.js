@@ -48,7 +48,9 @@ window.checkFirstTime = function() {
         screenMain.style.display = 'flex';
         window.switchSubView('emergencia');
     } else {
+        // CORREGIDO: Activa explícitamente el display block del contenedor padre
         screenOnboarding.style.display = 'flex';
+        window.nextSlide(1);
     }
 };
 
@@ -99,7 +101,7 @@ window.cerrarModalConfirmarSOS = function() {
     document.getElementById('modal-confirmar-sos').style.display = "none";
 };
 
-// CORREGIDO: Envía un registro asíncrono real a Supabase con coordenadas de Concepción Centro
+// Envia un registro asíncrono real a Supabase con coordenadas de Concepción Centro
 window.dispararAlertaOndaSOSReal = async function() {
     window.cerrarModalConfirmarSOS();
 
@@ -157,24 +159,18 @@ window.toggleAltoContraste = function() {
 };
 
 window.setAppTextSize = function(tamaño) {
-    // Removemos las escalas previas del Body de forma elástica
     document.body.classList.remove('text-size-pequeno', 'text-size-mediano', 'text-size-grande', 'text-size-extra-grande');
-    // Inyectamos la nueva jerarquía de fuentes
     document.body.classList.add(`text-size-${tamaño}`);
 
-    // Limpiamos los selectores redondos previos
     document.querySelectorAll('.check-circle-indicator').forEach(chk => chk.classList.remove('active'));
     
-    // Encendemos la bolita de verificación de la opción activa
     const targetCheck = document.getElementById(`chk-${tamaño}`);
     if (targetCheck) targetCheck.add('active');
 
-    // Traducimos el texto en el menú de perfil principal
     const labelMap = { 'pequeno': 'Pequeño', 'mediano': 'Mediano', 'grande': 'Grande', 'extra-grande': 'Extra Grande' };
     const labelActual = document.getElementById('label-size-actual');
     if (labelActual) labelActual.innerText = labelMap[tamaño];
 
-    // Persistimos en la memoria del smartphone
     localStorage.setItem('appTextSize', tamaño);
 };
 
