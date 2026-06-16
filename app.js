@@ -1,43 +1,24 @@
-console.log("=== ARCHIVO APP.JS CARGADO EN EL NAVEGADOR ===");
-
-// --- LLAVES DE CONEXIÓN CON TU BASE DE DATOS SUPABASE ---
+// --- CONFIGURACIÓN DE CONEXIÓN CON TU BASE DE DATOS SUPABASE ---
 const SUPABASE_URL = "https://zxeslmngcrqtbolfkbvf.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_5tU3B4kVQOBGy0pkXYhgcQ_iXi21B4O";
 
-// Forzar la creación del cliente global
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// --- ESTADO LOCAL DEL CIUDADANO AUTENTICADO ---
+// --- ESTADO INTERNO ---
 let usuarioLogeado = null;
 
-// --- PROCESAR INICIO DE SESIÓN DIRECTO AL HOME ---
-window.procesarLoginDirectoSOS = async function(e) {
-    console.log("-> Evento onsubmit capturado exitosamente.");
-    
-    // 1. Bloqueo total de recarga nativa
-    if (e) {
-        e.preventDefault();
-        e.stopPropagation();
+// --- CONTROLADOR DE CLICS: LOGEARSE ---
+document.getElementById('btn-ingresar-login').addEventListener('click', async () => {
+    const emailStr = document.getElementById('app-email').value.trim();
+    const passwordStr = document.getElementById('app-pass').value.trim();
+
+    if (!emailStr || !passwordStr) {
+        alert("Por favor, ingresa tu correo y contraseña de prueba.");
+        return;
     }
-    
-    const emailInput = document.getElementById('app-email');
-    const passInput = document.getElementById('app-pass');
-    
-    // Alerta de control 1
-    alert("🔍 Alerta 1: El botón funciona. Capturando inputs...");
-
-    if (!emailInput || !passInput) {
-        alert("❌ ERROR CRÍTICO: Los IDs 'app-email' o 'app-pass' no existen en tu HTML.");
-        return false;
-    }
-
-    const emailStr = emailInput.value.trim();
-    const passwordStr = passInput.value.trim();
-
-    // Alerta de control 2
-    alert("📡 Alerta 2: Vamos a consultar a Supabase por: " + emailStr + " con la clave: " + passwordStr);
 
     try {
+        // Consulta asíncrona directa sin burbujeo de formulario
         const { data: ciudadanos, error } = await supabase
             .from('perfiles_ciudadanos')
             .select('*')
@@ -45,65 +26,101 @@ window.procesarLoginDirectoSOS = async function(e) {
             .eq('contrasena_plana', passwordStr);
 
         if (error) {
-            alert("❌ Error devuelto por la base de datos: " + error.message);
-            return false;
+            alert("Error en conexión: " + error.message);
+            return;
         }
-
-        // Alerta de control 3
-        alert("📥 Alerta 3: Supabase respondió. Cantidad de usuarios encontrados: " + (ciudadanos ? ciudadanos.length : 0));
 
         if (ciudadanos && ciudadanos.length > 0) {
             usuarioLogeado = ciudadanos[0];
-            
+
+            // Inyectar datos de la fila de Supabase en la UI
             document.getElementById('profile-user-name').innerText = usuarioLogeado.nombre_completo;
             document.getElementById('profile-user-rut').innerText = `RUT: ${usuarioLogeado.rut || '12.345.678-9'}`;
-            
-            // Cambio de pantallas SPA
+
+            // Cambiar de vistas ocultando los bloques principales
             document.getElementById('screen-login').style.display = "none";
             document.getElementById('app-main-layout').style.display = "flex";
-            
-            window.switchTabView('emergencias');
-            alert("🎉 ¡LOGEO EXITOSO! Bienvenido " + usuarioLogeado.nombre_completo);
+
+            // Levantar la sub-vista por defecto
+            activarSubVista('emergencias');
         } else {
-            alert("⚠️ Credenciales incorrectas. Supabase no encontró este correo y clave exactos.");
+            alert("Credenciales inválidas. Comprueba tus datos de prueba.");
         }
-
     } catch (err) {
-        alert("💥 Error de ejecución en el JS: " + err.message);
+        alert("Error crítico del sistema: " + err.message);
     }
-    
-    return false;
-};
+});
 
-// --- CONTROLADOR DE PESTAÑAS (TAB BAR INFERIOR) ---
-window.switchTabView = function(targetView) {
-    const viewEmergencias = document.getElementById('view-emergencias');
-    const viewVideollamada = document.getElementById('view-videollamada');
-    const viewPerfil = document.getElementById('view-perfil');
-    
-    if(viewEmergencias) viewEmergencias.style.display = "none";
-    if(viewVideollamada) viewVideollamada.style.display = "none";
-    if(viewPerfil) viewPerfil.style.display = "none";
-    
+// --- CONTROLADOR DE CLICS: EMISIÓN DEL S.O.S ---
+document.getElementById('btn-panico-sos').addEventListener('click', async () => {
+    if (!usuarioLogeado) return;
+
+    const latConcepcion = -36.82900000;
+    const lonConcepcion = -73.03980000;
+    const correlativoFolio = "SOS-" + Math.floor(100 + Math.random() * 900);
+
+    try {
+        const { error } = await supabase
+            .from('incidentes_cenco')
+            .insert([{
+                id: correlativoFolio,
+                usuario_id: usuarioLogeado.id,
+                nombre_usuario_anonimo: usuarioLogeado.nombre_completo,
+                tipo_incidente: "Botón SOS",
+                categoria_tag: "SOS",
+                ubicacion_texto: "Sector Central, Concepción",
+                latitud: latConcepcion,
+                longitud: lonConcepcion,
+                detalles_reporte: "Activación Crítica de auxilio desde dispositivo móvil.",
+                estado_procedimiento: "CRÍTICO"
+            }]);
+
+        if (error) {
+            alert("No se pudo emitir la señal: " + error.message);
+        } else {
+            alert(`🚨 S.O.S ENVIADO\nFolio: ${correlativoFolio}\n\nCarabineros recibió tu ubicación en Concepción.`);
+        }
+    } catch (err) {
+        alert("Error de red: " + err.message);
+    }
+});
+
+// --- CONTROLADOR DE CLICS: SISTEMA DE PESTAÑAS (TAB BAR) ---
+function activarSubVista(viewName) {
+    // Esconder todas las sub-vistas
+    document.getElementById('view-emergencias').style.display = "none";
+    document.getElementById('view-videollamada').style.display = "none";
+    document.getElementById('view-perfil').style.display = "none";
+
+    // Quitar iluminación activa a los botones del TabBar
     document.getElementById('tab-emergencias').classList.remove('active');
     document.getElementById('tab-videollamada').classList.remove('active');
     document.getElementById('tab-perfil').classList.remove('active');
 
-    if (targetView === 'emergencias' && viewEmergencias) {
-        viewEmergencias.style.display = "block";
+    // Encender solo el seleccionado
+    if (viewName === 'emergencias') {
+        document.getElementById('view-emergencias').style.display = "block";
         document.getElementById('tab-emergencias').classList.add('active');
-    } else if (targetView === 'videollamada' && viewVideollamada) {
-        viewVideollamada.style.display = "block";
+    } else if (viewName === 'videollamada') {
+        document.getElementById('view-videollamada').style.display = "block";
         document.getElementById('tab-videollamada').classList.add('active');
-    } else if (targetView === 'perfil' && viewPerfil) {
-        viewPerfil.style.display = "block";
+    } else if (viewName === 'perfil') {
+        document.getElementById('view-perfil').style.display = "block";
         document.getElementById('tab-perfil').classList.add('active');
     }
-};
+}
 
-// --- CERRAR SESIÓN ---
-window.cerrarSesionApp = function() {
+// Asignar los eventos de las pestañas directamente
+document.getElementById('tab-emergencias').addEventListener('click', () => activarSubVista('emergencias'));
+document.getElementById('tab-videollamada').addEventListener('click', () => activarSubVista('videollamada'));
+document.getElementById('tab-perfil').addEventListener('click', () => activarSubVista('perfil'));
+
+// --- CONTROLADOR DE CLICS: CERRAR SESIÓN ---
+document.getElementById('btn-cerrar-sesion').addEventListener('click', () => {
     usuarioLogeado = null;
+    document.getElementById('app-email').value = "";
+    document.getElementById('app-pass').value = "";
+    
     document.getElementById('app-main-layout').style.display = "none";
     document.getElementById('screen-login').style.display = "flex";
-};
+});

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Carabineros de Chile - Emergencias</title>
+    <title>Carabineros de Chile - Acceso Inclusivo</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🛡️</text></svg>">
 </head>
@@ -20,25 +20,23 @@
             <h2>Iniciar Sesión</h2>
             <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
             
-            <form id="form-login-ciudadano" onsubmit="window.procesarLoginDirectoSOS(event); return false;">
-                <div class="input-app-group">
-                    <label>Correo Electrónico</label>
-                    <div class="input-with-icon">
-                        <span class="field-icon">✉️</span>
-                        <input type="email" id="app-email" required placeholder="juan.perez@email.com">
-                    </div>
+            <div class="input-app-group">
+                <label>Correo Electrónico</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">✉️</span>
+                    <input type="email" id="app-email" placeholder="juan.perez@email.com">
                 </div>
-                
-                <div class="input-app-group">
-                    <label>Contraseña</label>
-                    <div class="input-with-icon">
-                        <span class="field-icon">🔒</span>
-                        <input type="password" id="app-pass" required placeholder="••••••••">
-                    </div>
+            </div>
+            
+            <div class="input-app-group">
+                <label>Contraseña</label>
+                <div class="input-with-icon">
+                    <span class="field-icon">🔒</span>
+                    <input type="password" id="app-pass" placeholder="••••••••">
                 </div>
-                
-                <button type="submit" class="btn-primary-app">Iniciar Sesión</button>
-            </form>
+            </div>
+            
+            <button type="button" class="btn-primary-app" id="btn-ingresar-login">Iniciar Sesión</button>
             
             <div class="test-credentials-alert">
                 <p><strong>Credenciales de prueba:</strong></p>
@@ -48,7 +46,7 @@
         </div>
     </div>
 
-    <div id="app-main-layout" style="display: none;">
+    <div id="app-main-layout" class="app-screen" style="display: none;">
         
         <header class="app-header-green">
             <div class="header-content">
@@ -66,7 +64,7 @@
                 </div>
 
                 <div class="sos-container">
-                    <button class="btn-sos-trigger" onclick="window.activarBotonPanicoSOS()">
+                    <button class="btn-sos-trigger" id="btn-panico-sos">
                         <div class="sos-graphic">⚠️</div>
                         <span class="sos-text-main">S.O.S.</span>
                         <span class="sos-text-sub">AYUDA INMEDIATA</span>
@@ -74,7 +72,7 @@
                 </div>
 
                 <div class="options-list">
-                    <div class="option-item" onclick="alert('Módulo de reportes en desarrollo.')">
+                    <div class="option-item" onclick="alert('Módulo de reportes disponible en desarrollo.')">
                         <div class="option-icon bg-light-orange">📝</div>
                         <div class="option-text">
                             <h3>Reportar Delito Menor</h3>
@@ -83,7 +81,7 @@
                         <span class="arrow-icon">›</span>
                     </div>
 
-                    <div class="option-item" onclick="alert('Historial enlazado a Supabase.')">
+                    <div class="option-item" onclick="alert('Consultando bitácora histórica...')">
                         <div class="option-icon bg-light-blue">🕒</div>
                         <div class="option-text">
                             <h3>Historial de Envíos</h3>
@@ -99,7 +97,7 @@
                     <h1>Videollamadas</h1>
                     <p>Comuníquese en Lengua de Señas Chilena (LSCh) con un intérprete.</p>
                 </div>
-                <div class="videocall-main-card" onclick="alert('Conectando video...')">
+                <div class="videocall-main-card" onclick="alert('Estableciendo canal WebRTC...')">
                     <div class="videocall-icon-large">📹</div>
                     <h2>Unirse a Videollamada</h2>
                     <p>Hablar con un operador ahora</p>
@@ -111,31 +109,33 @@
                 <div class="profile-header-card">
                     <div class="profile-avatar-placeholder">👤</div>
                     <div class="profile-data">
-                        <h2 id="profile-user-name">Juan Pérez</h2>
+                        <h2 id="profile-user-name">Cargando...</h2>
                         <p id="profile-user-rut">RUT: --.---.---.-</p>
                     </div>
                 </div>
-                <button class="btn-logout" onclick="window.cerrarSesionApp()">➔ Cerrar Sesión</button>
+                <button class="btn-logout" id="btn-cerrar-sesion">➔ Cerrar Sesión</button>
             </section>
 
         </main>
 
         <nav class="app-navbar-bottom">
-            <button class="navbar-item active" id="tab-emergencias" onclick="window.switchTabView('emergencias')">
+            <button class="navbar-item active" id="tab-emergencias">
                 <span class="nav-icon">⚠️</span>
                 <span class="nav-text">Emergencias</span>
             </button>
-            <button class="navbar-item" id="tab-videollamada" onclick="window.switchTabView('videollamada')">
+            <button class="navbar-item" id="tab-videollamada">
                 <span class="nav-icon">📹</span>
                 <span class="nav-text">Videollamada</span>
             </button>
-            <button class="navbar-item" id="tab-perfil" onclick="window.switchTabView('perfil')">
+            <button class="navbar-item" id="tab-perfil">
                 <span class="nav-icon">👤</span>
                 <span class="nav-text">Mi Perfil</span>
             </button>
         </nav>
 
-    </div> <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="app.js"></script>
 </body>
 </html>
