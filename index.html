@@ -48,7 +48,8 @@
     </div>
 
     <div id="screen-onboarding" class="app-screen" style="display: none;">
-        <div class="onboarding-slide" id="slide-1">
+        
+        <div class="onboarding-slide active" id="slide-1">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1517048676732-d65bc937f952?q=80&w=1000&auto=format&fit=crop');">
                 <div class="img-badge">🛡️</div>
                 <div class="play-btn"><i class="fa-solid fa-play"></i></div>
@@ -61,6 +62,7 @@
                 <button onclick="window.nextSlide(2)" class="btn-primary">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
+
         <div class="onboarding-slide" id="slide-2" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1543165365-072ca2628d0f?q=80&w=1000&auto=format&fit=crop');">
                 <div class="img-badge error">⚠️</div>
@@ -74,6 +76,7 @@
                 <button onclick="window.nextSlide(3)" class="btn-primary">Siguiente <i class="fa-solid fa-chevron-right"></i></button>
             </div>
         </div>
+
         <div class="onboarding-slide" id="slide-3" style="display: none;">
             <div class="onboarding-img" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?q=80&w=1000&auto=format&fit=crop');">
                 <div class="img-badge info">📹</div>
@@ -190,7 +193,6 @@
             <div class="option-row" onclick="window.setAppTextSize('mediano')"><span style="font-size:17px;">Aa Mediano</span><div class="check-circle-indicator" id="chk-mediano"></div></div>
             <div class="option-row" onclick="window.setAppTextSize('grande')"><span style="font-size:22px;">Aa Grande</span><div class="check-circle-indicator" id="chk-grande"></div></div>
             <div class="option-row" onclick="window.setAppTextSize('extra-grande')"><span style="font-size:26px;">Aa Extra Grande</span><div class="check-circle-indicator" id="chk-extra-grande"></div></div>
-            <p class="footer-notice-text">El tamaño de texto se aplicará en toda la aplicación</p>
         </div>
     </div>
 
@@ -200,22 +202,14 @@
             <h2>Notificaciones</h2>
         </div>
         <div class="sub-config-body">
-            <h4 class="section-divider-title">AJUSTES GENERALES</h4>
             <div class="menu-list-item-clean">
                 <div class="item-icon-clean icon-blue-light">🔔</div>
                 <div class="item-text"><h3>Notificaciones Push</h3><p>Permitir notificaciones de la app</p></div>
                 <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
             </div>
-            
-            <h4 class="section-divider-title">ALERTAS SENSORIALES</h4>
             <div class="menu-list-item-clean">
                 <div class="item-icon-clean icon-blue-light">📱</div>
                 <div class="item-text"><h3>Vibración Fuerte</h3><p>Vibrar al recibir alertas</p></div>
-                <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
-            </div>
-            <div class="menu-list-item-clean">
-                <div class="item-icon-clean icon-yellow-light">⚡</div>
-                <div class="item-text"><h3>Alertas Luminosas</h3><p>Usar flash de la cámara para avisos</p></div>
                 <label class="switch-toggle"><input type="checkbox" checked><span class="slider-round"></span></label>
             </div>
         </div>
