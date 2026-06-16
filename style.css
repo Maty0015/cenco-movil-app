@@ -1,26 +1,14 @@
+/* =========================================================================
+   🎨 PALETA DE COLORES INSTITUCIONAL Y CONFIGURACIÓN FIGMA EXACTA
+   ========================================================================= */
 :root {
-    --verde-institucional: #009c3c; /* Verde limpio del prototipo Figma */
-    --verde-oscuro-navbar: #006828;
+    --verde-principal: #009c3c;        /* El verde brillante de los botones del Figma */
+    --verde-header: #006828;           /* El verde oscuro del fondo institucional */
+    --gris-fondo-app: #f2f2f7;         /* Gris sutil de fondo para las pantallas */
+    --blanco-tarjeta: #ffffff;
+    --texto-oscuro: #1c1c1e;
+    --texto-mutado: #8e8e93;
     --rojo-sos: #e60000;
-    --bg-app-gris: #f8f9fa;
-    --texto-negro: #0d1117;
-    --texto-gris: #57606a;
-    --card-blanca: #ffffff;
-}
-
-/* 📱 MODO ACCESIBILIDAD ALTO CONTRASTE */
-body.high-contrast-mode {
-    --verde-institucional: #00ff00;
-    --verde-oscuro-navbar: #000000;
-    --rojo-sos: #ff0000;
-    --bg-app-gris: #000000;
-    --texto-negro: #ffffff;
-    --texto-gris: #ffff00;
-    --card-blanca: #121212;
-}
-
-body.text-large {
-    font-size: 1.15rem;
 }
 
 * {
@@ -28,535 +16,306 @@ body.text-large {
     padding: 0;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
 }
 
 body {
-    background-color: var(--bg-app-gris);
-    color: var(--texto-negro);
+    background-color: #1e222b; /* Fondo oscuro exterior para resaltar el simulador del teléfono */
+    color: var(--texto-oscuro);
     height: 100vh;
-    overflow: hidden;
     display: flex;
     justify-content: center;
+    align-items: center;
 }
 
-/* Simulador de tamaño de celular para testing en Web */
+/* =========================================================================
+   📱 CONTENEDOR EFECTO CELULAR (Bordes redondeados curvos de tu prototipo)
+   ========================================================================= */
 .app-screen, #app-main-layout {
-    width: 100%;
-    max-width: 430px; /* Ancho estándar de un iPhone Pro Max / Android Premium */
-    height: 100vh;
-    background-color: var(--bg-app-gris);
+    width: 390px;
+    height: 844px;
+    background-color: var(--gris-fondo-app);
     position: relative;
-    box-shadow: 0 0 20px rgba(0,0,0,0.1);
-}
-
-/* 🟢 ESTILOS VISTA 1: ONBOARDING */
-#screen-onboarding {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 20px;
-    background-color: #3a415a; /* Fondo estético degradado del Figma */
-}
-
-.onboarding-card {
-    background: var(--card-blanca);
-    border-radius: 24px;
+    border-radius: 40px;
     overflow: hidden;
-    width: 100%;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.video-container {
-    height: 280px;
-    background-size: cover;
-    background-position: center;
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.badge-video {
-    position: absolute;
-    left: 15px;
-    bottom: 15px;
-    background: rgba(0, 0, 0, 0.75);
-    color: white;
-    padding: 5px 12px;
-    border-radius: 20px;
-    font-size: 0.8rem;
-    font-weight: 600;
-    backdrop-filter: blur(4px);
-}
-
-.btn-play-simulated {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.3);
-    border: 2px solid white;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.2s;
-    backdrop-filter: blur(2px);
-}
-
-.btn-play-simulated:hover {
-    transform: scale(1.1);
-}
-
-.top-right-icon {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-    width: 36px;
-    height: 36px;
-    background: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.onboarding-content {
-    padding: 25px;
-    text-align: center;
-}
-
-.onboarding-content h2 {
-    font-size: 1.6rem;
-    font-weight: 800;
-    margin-bottom: 10px;
-    color: #0d1117;
-}
-
-.onboarding-content p {
-    color: var(--texto-gris);
-    font-size: 0.95rem;
-    line-height: 1.5;
-    margin-bottom: 20px;
-    min-height: 70px;
-}
-
-.carousel-indicators {
-    display: flex;
-    justify-content: center;
-    gap: 8px;
-    margin-bottom: 25px;
-}
-
-.carousel-indicators .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #cbd5e1;
-}
-
-.carousel-indicators .dot.active {
-    width: 24px;
-    background: var(--verde-institucional);
-    border-radius: 4px;
-}
-
-/* 🟢 ESTILOS VISTA 2: LOGIN INSTITUCIONAL */
-.institution-header {
-    background-color: var(--verde-oscuro-navbar);
-    color: white;
-    padding: 40px 20px;
-    text-align: center;
-    border-bottom-left-radius: 30px;
-    border-bottom-right-radius: 30px;
-}
-
-.logo-circular {
-    width: 70px;
-    height: 70px;
-    background: white;
-    border-radius: 50%;
-    font-size: 2.2rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 12px auto;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-}
-
-.login-container-card {
-    background: var(--card-blanca);
-    margin: -20px 20px 0 20px;
-    padding: 25px;
-    border-radius: 20px;
-    box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-}
-
-.login-container-card h3 {
-    font-size: 1.4rem;
-    font-weight: 700;
-}
-
-.login-container-card .subtitle {
-    color: var(--texto-gris);
-    font-size: 0.85rem;
-    margin-top: 4px;
-    margin-bottom: 20px;
-}
-
-.input-field-group {
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-bottom: 16px;
 }
 
-.input-field-group label {
+/* =========================================================================
+   🔐 INTERFAZ DE LOGIN INSTITUCIONAL (Copia fiel de tu captura verde)
+   ========================================================================= */
+.login-header-green {
+    background-color: var(--verde-header);
+    color: white;
+    padding: 50px 20px 60px 20px;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Contenedor del escudo/logo blanco circular superior */
+.institution-logo {
+    width: 85px;
+    height: 85px;
+    background: white;
+    border-radius: 50%;
+    font-size: 2.8rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.login-header-green h1 {
+    font-size: 1.6rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.login-header-green p {
+    font-size: 0.95rem;
+    opacity: 0.9;
+}
+
+/* Tarjeta contenedora blanca flotante con curvas pronunciadas */
+.login-container-card {
+    background: var(--blanco-tarjeta);
+    margin: -35px 20px 0 20px;
+    padding: 30px 24px;
+    border-radius: 28px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.08);
+    flex-grow: 1;
+}
+
+.login-container-card h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--texto-oscuro);
+}
+
+.login-subtitle {
+    color: var(--texto-mutated);
+    font-size: 0.9rem;
+    margin-top: 4px;
+    margin-bottom: 24px;
+}
+
+/* Cajas de texto y empaquetamiento de inputs con iconos */
+.input-app-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.input-app-group label {
     font-weight: 600;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
+    color: var(--texto-oscuro);
 }
 
-.input-icon-wrapper {
+.input-with-icon {
     position: relative;
     display: flex;
     align-items: center;
 }
 
-.input-icon {
+.field-icon {
     position: absolute;
-    left: 12px;
+    left: 14px;
     font-size: 1.1rem;
+    color: var(--texto-mutated);
 }
 
-.input-icon-wrapper input {
+.input-with-icon input {
     width: 100%;
-    padding: 12px 12px 12px 38px;
-    border: 1px solid #e1e4e6;
-    border-radius: 12px;
-    background-color: #fafbfc;
-    font-size: 0.95rem;
+    padding: 14px 14px 14px 44px;
+    border: 1px solid #e1e4e8;
+    border-radius: 14px;
+    background-color: #ffffff;
+    font-size: 1rem;
+    color: var(--texto-oscuro);
+    outline: none;
+    transition: border 0.2s;
 }
 
-.btn-primary {
+.input-with-icon input:focus {
+    border-color: var(--verde-principal);
+}
+
+/* El gran botón verde redondeado */
+.btn-primary-app {
     width: 100%;
-    padding: 14px;
-    background-color: var(--verde-institucional);
+    padding: 16px;
+    background-color: var(--verde-principal);
     color: white;
     border: none;
-    border-radius: 12px;
-    font-size: 1rem;
-    font-weight: bold;
+    border-radius: 14px;
+    font-size: 1.1rem;
+    font-weight: 700;
     cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 156, 60, 0.2);
     transition: background 0.2s;
 }
 
-.test-credentials-box {
-    background: #edf7ed;
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 15px;
-    font-size: 0.8rem;
-    color: #1e4620;
-    line-height: 1.4;
+.btn-primary-app:hover {
+    background-color: #008432;
 }
 
-.support-link {
+/* Alerta de credenciales enlazadas a tu base de datos */
+.test-credentials-alert {
+    background: #eef7ee;
+    color: #1e4620;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-top: 20px;
+    font-size: 0.85rem;
+    line-height: 1.4;
+    border-left: 4px solid var(--verde-principal);
+}
+
+.test-credentials-alert code {
+    font-family: monospace;
+    font-weight: bold;
+    background: rgba(0,0,0,0.05);
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+.login-support-link {
     display: block;
     text-align: center;
-    font-size: 0.8rem;
-    color: var(--texto-gris);
-    margin-top: 20px;
+    color: var(--texto-mutated);
+    font-size: 0.85rem;
+    margin-top: 25px;
     text-decoration: none;
 }
 
-/* 🟢 REPRODUCTOR SPA Y ESTRUCTURA HOME DE LA APP */
-.app-top-navbar {
-    background-color: var(--verde-oscuro-navbar);
+/* =========================================================================
+   🖥️ INTERFAZ DE NAVEGACIÓN Y VISTAS INTERNAS (POST-LOGIN)
+   ========================================================================= */
+.app-header-green {
+    background-color: var(--verde-header);
     color: white;
-    padding: 15px 20px;
+    padding: 16px 20px;
 }
 
-.navbar-brand-wrapper {
+.header-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.1rem;
 }
 
-.app-content-viewport {
+.app-viewport-content {
     flex-grow: 1;
     padding: 20px;
     overflow-y: auto;
 }
 
-.view-intro-center {
-    text-align: center;
-    margin-bottom: 2rem;
-}
+.view-header-center { text-align: center; margin-bottom: 1.5rem; }
+.view-header-left { text-align: left; margin-bottom: 1.5rem; }
 
-.view-intro-center h1, .view-intro-left h1 {
-    font-size: 1.5rem;
-    font-weight: 800;
-}
+.view-header-center h1, .view-header-left h1 { font-size: 1.6rem; font-weight: 800; }
+.view-header-center p, .view-header-left p { color: var(--texto-mutated); font-size: 0.95rem; margin-top: 4px; }
 
-.view-intro-center p, .view-intro-left p {
-    color: var(--texto-gris);
-    font-size: 0.9rem;
-    margin-top: 4px;
-}
-
-/* 🚨 BOTÓN S.O.S GIGANTE FIGMA STYLE */
-.sos-button-outer-container {
-    display: flex;
-    justify-content: center;
-    margin: 2rem 0;
-}
-
+/* 🚨 DISEÑO DEL BOTÓN SOS */
+.sos-container { display: flex; justify-content: center; margin: 2rem 0; }
 .btn-sos-trigger {
     width: 220px;
     height: 220px;
     border-radius: 50%;
     background: var(--rojo-sos);
     color: white;
-    border: 8px solid rgba(230, 0, 0, 0.15);
-    cursor: pointer;
+    border: 8px solid rgba(230, 0, 0, 0.1);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 12px 28px rgba(230, 0, 0, 0.3);
-    transition: transform 0.1s, box-shadow 0.2s;
+    cursor: pointer;
+    box-shadow: 0 12px 24px rgba(230,0,0,0.25);
 }
+.sos-graphic { font-size: 2.8rem; margin-bottom: 4px; }
+.sos-text-main { font-size: 2.3rem; font-weight: 900; }
+.sos-text-sub { font-size: 0.75rem; font-weight: 700; opacity: 0.9; }
 
-.btn-sos-trigger:active {
-    transform: scale(0.96);
-    box-shadow: 0 6px 14px rgba(230, 0, 0, 0.4);
-}
-
-.sos-icon-graphic {
-    font-size: 2.5rem;
-    margin-bottom: 6px;
-}
-
-.sos-main-text {
-    font-size: 2.2rem;
-    font-weight: 900;
-    letter-spacing: 1px;
-}
-
-.sos-sub-text {
-    font-size: 0.75rem;
-    font-weight: 700;
-    opacity: 0.9;
-    margin-top: 2px;
-}
-
-/* 📦 MENÚS DE OPCIONES (LISTAS) */
-.menu-list-options {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.menu-option-item {
-    background: var(--card-blanca);
+/* FILAS DE MENÚ CON CURVAS E ICONOS */
+.options-list { display: flex; flex-direction: column; gap: 12px; }
+.option-item {
+    background: var(--blanco-tarjeta);
     padding: 16px;
-    border-radius: 16px;
+    border-radius: 18px;
     display: flex;
     align-items: center;
-    gap: 15px;
+    gap: 14px;
     border: 1px solid #edf0f2;
-    cursor: pointer;
-    position: relative;
 }
+.option-icon { width: 44px; height: 44px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.bg-light-orange { background: #fff1e6; }
+.bg-light-blue { background: #e6f0fa; }
+.bg-light-green { background: #eafbea; }
+.bg-light-purple { background: #f3e6fa; }
+.bg-light-pink { background: #fae6f0; }
 
-.option-icon-avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.3rem;
-}
+.option-text { flex-grow: 1; }
+.option-text h3 { font-size: 1rem; font-weight: 700; color: var(--texto-oscuro); }
+.option-text p { font-size: 0.8rem; color: var(--texto-mutated); margin-top: 2px; }
+.arrow-icon { font-size: 1.4rem; color: #cbd5e1; }
 
-.color-orange { background: #fff1e6; }
-.color-blue { background: #e6f0fa; }
-.color-green { background: #e6f5ea; }
-.color-purple { background: #f3e6fa; }
-.color-pink { background: #fae6f0; }
-.color-gray { background: #f0f2f5; }
-
-.option-info-text {
-    flex-grow: 1;
-}
-
-.option-info-text h4 {
-    font-size: 0.95rem;
-    font-weight: 700;
-    color: var(--texto-negro);
-}
-
-.option-info-text p {
-    font-size: 0.8rem;
-    color: var(--texto-gris);
-    margin-top: 2px;
-}
-
-.arrow-indicator {
-    color: #cbd5e1;
-    font-weight: bold;
-}
-
-/* 📹 MODULO VIDEOLLAMADAS */
-.videocall-action-card {
-    background: var(--verde-institucional);
+/* TARJETA DE VIDEOLLAMADA */
+.videocall-main-card {
+    background: var(--verde-principal);
     color: white;
-    padding: 24px;
-    border-radius: 20px;
-    text-align: center;
-    cursor: pointer;
-    box-shadow: 0 8px 16px rgba(0, 156, 60, 0.2);
-}
-
-.videocall-card-icon {
-    font-size: 2.5rem;
-    margin-bottom: 8px;
-}
-
-.status-pill-online {
-    display: inline-block;
-    background: rgba(0,0,0,0.25);
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75rem;
-    font-weight: 700;
-    margin-top: 12px;
-}
-
-.mini-tag {
-    background: #f0f2f5;
-    color: var(--texto-gris);
-    font-size: 0.7rem;
-    padding: 2px 8px;
-    border-radius: 4px;
-    font-weight: 600;
-}
-
-.disclaimer-text-box {
-    margin-top: 20px;
-    background: #f1f5f9;
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 0.78rem;
-    color: var(--texto-gris);
-    line-height: 1.4;
-}
-
-/* 👤 PANTALLA PERFIL Y AJUSTES */
-.profile-card-header {
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    background: var(--card-blanca);
-    padding: 20px;
-    border-radius: 16px;
-    border: 1px solid #edf0f2;
-    margin-bottom: 1.5rem;
-}
-
-.profile-avatar-placeholder {
-    width: 54px;
-    height: 54px;
-    border-radius: 50%;
-    background: #f0f2f5;
-    font-size: 1.6rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.section-divider-title {
-    font-size: 0.75rem;
-    font-weight: 700;
-    color: var(--texto-gris);
-    letter-spacing: 0.5px;
-    margin: 15px 0 8px 4px;
-}
-
-/* INTERRUPTOR TOGGLE SWITCH */
-.toggle-switch-control {
-    position: relative;
-    width: 44px;
-    height: 24px;
-}
-
-.toggle-switch-control input { display:none; }
-
-.slider-round {
-    position: absolute;
-    cursor: pointer;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: #cbd5e1;
-    transition: .3s;
+    padding: 26px;
     border-radius: 24px;
+    text-align: center;
 }
+.videocall-icon-large { font-size: 2.8rem; margin-bottom: 6px; }
+.status-online { display: inline-block; background: rgba(0,0,0,0.2); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; margin-top: 10px; }
+.info-box-gray { margin-top: 20px; background: #e5e5ea; border-radius: 14px; padding: 14px; font-size: 0.8rem; color: #555; line-height: 1.4; }
 
-.slider-round:before {
-    position: absolute;
-    content: "";
-    height: 18px; width: 18px;
-    left: 3px; bottom: 3px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-}
+/* SECCIÓN PERFIL */
+.profile-header-card { display: flex; align-items: center; gap: 16px; background: var(--blanco-tarjeta); padding: 16px; border-radius: 16px; border: 1px solid #edf0f2; }
+.profile-avatar-placeholder { width: 52px; height: 52px; border-radius: 50%; background: #e5e5ea; font-size: 1.8rem; display: flex; align-items: center; justify-content: center; }
+.profile-data h2 { font-size: 1.2rem; font-weight: 700; }
+.profile-data p { color: var(--texto-mutated); font-size: 0.85rem; }
+.section-title { font-size: 0.75rem; font-weight: 700; color: var(--texto-mutated); margin: 20px 0 8px 4px; }
 
-input:checked + .slider-round { background-color: var(--verde-institucional); }
-input:checked + .slider-round:before { transform: translateX(20px); }
+/* TOGGLE SWITCH DE ALTO CONTRASTE */
+.toggle-control { position: relative; width: 46px; height: 26px; }
+.toggle-control input { display:none; }
+.control-slider { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background-color: #d1d1d6; transition: .3s; border-radius: 30px; }
+.control-slider:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; }
+input:checked + .control-slider { background-color: var(--verde-principal); }
+input:checked + .control-slider:before { transform: translateX(20px); }
 
-.btn-logout-app {
-    width: 100%;
-    background: transparent;
-    border: 1px solid #fca5a5;
-    color: #ef4444;
-    padding: 12px;
-    border-radius: 12px;
-    font-weight: bold;
-    margin-top: 2rem;
-    cursor: pointer;
-}
+.btn-logout { width: 100%; background: transparent; color: #e60000; border: 1px solid #fca5a5; padding: 14px; border-radius: 14px; font-weight: bold; margin-top: 2.5rem; cursor: pointer; }
 
-/* 📱 BARRA DE NAVEGACIÓN INFERIOR (TABBAR) */
-.app-bottom-tabbar {
-    height: 70px;
-    background: var(--card-blanca);
+/* --- BARRA DE NAVEGACIÓN INFERIOR (TAB BAR) --- */
+.app-navbar-bottom {
+    height: 75px;
+    background: var(--blanco-tarjeta);
     border-top: 1px solid #edf0f2;
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding-bottom: env(safe-area-inset-bottom);
 }
-
-.tabbar-item {
+.navbar-item {
     background: transparent;
     border: none;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 4px;
-    color: var(--texto-gris);
-    cursor: pointer;
+    color: var(--texto-mutated);
     width: 33%;
+    cursor: pointer;
 }
-
-.tabbar-item .tab-icon { font-size: 1.3rem; }
-.tabbar-item .tab-text { font-size: 0.75rem; font-weight: 600; }
-
-.tabbar-item.active {
-    color: var(--verde-institucional);
-}
+.nav-icon { font-size: 1.4rem; }
+.nav-text { font-size: 0.75rem; font-weight: 600; margin-top: 4px; }
+.navbar-item.active { color: var(--verde-principal); }
