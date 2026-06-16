@@ -14,7 +14,7 @@
     font-family: 'DM Sans', sans-serif; 
 }
 
-/* Envoltura elástica responsiva para centrar el celular en monitores */
+/* Envoltura elástica responsiva para centrar el celular en monitores app */
 body { 
     background-color: #1E293B; 
     color: var(--gris-texto); 
