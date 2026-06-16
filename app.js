@@ -30,17 +30,16 @@ const onboardingData = [
     }
 ];
 
-// --- 🔐 PASO 1: PROCESAR LOGEO DIRECTO GLOBAL (Gatillado por el onsubmit del HTML) ---
+// --- 🔐 PASO 1: FORMULARIO DE LOGIN (PANTALLA INICIAL CONFIGURADA GLOBALMENTE) ---
 window.procesarLoginMovil = async function(e) {
-    e.preventDefault(); // Detiene la recarga automática que destruye la sesión en Vercel
+    e.preventDefault(); // Congela el refresco del formulario de Vercel de inmediato
     
     const emailStr = document.getElementById('app-email').value.trim();
     const passwordStr = document.getElementById('app-pass').value.trim();
 
-    console.log("Conectando con Supabase para verificar usuario...");
+    console.log("Validando credenciales en la tabla perfiles_ciudadanos...");
 
     try {
-        // Consulta relacional directa a tu tabla perfiles_ciudadanos
         const { data: ciudadanos, error } = await supabase
             .from('perfiles_ciudadanos')
             .select('*')
@@ -48,37 +47,38 @@ window.procesarLoginMovil = async function(e) {
             .eq('contrasena_plana', passwordStr);
 
         if (error) {
-            alert("Error de conexión a Supabase: " + error.message);
+            alert("Error de comunicación con Supabase: " + error.message);
             return;
         }
 
         if (ciudadanos && ciudadanos.length > 0) {
             usuarioLogeado = ciudadanos[0];
             
-            // Inyectar los datos reales recuperados de tu DB en la vista de Perfil
+            // Cargar datos reales de la base de datos en la pestaña perfil del teléfono
             document.getElementById('profile-user-name').innerText = usuarioLogeado.nombre_completo;
             document.getElementById('profile-user-rut').innerText = `RUT: ${usuarioLogeado.rut || '12.345.678-9'}`;
             
-            // Transición SPA: Apagar Login, Encender Onboarding/Bienvenida
+            // SPA: Transición limpia de pantallas ocultando el login
             document.getElementById('screen-login').style.display = "none";
             document.getElementById('screen-onboarding').style.display = "flex";
             
-            // Forzar reinicio limpio del carrusel en el índice cero
+            // Forzar renderizado secuencial del paso 0 del carrusel
             inicializarOnboardingUI();
         } else {
-            alert("Las credenciales ingresadas no corresponden a ningún ciudadano sordo registrado.");
+            alert("Credenciales inválidas para acceso inclusivo. Verifique su correo o contraseña.");
         }
     } catch (err) {
-        console.error("Error crítico de autenticación:", err);
-        alert("No se pudo conectar al servidor de emergencias.");
+        console.error("Excepción detectada en login:", err);
+        alert("No se pudo establecer el canal seguro de autenticación.");
     }
 };
 
-// --- 🎬 PASO 2: CONTROL Y MOVIMIENTO INTERACTIVO DEL ONBOARDING ---
+// --- 🎬 PASO 2: INICIALIZACIÓN Y CONTROL INTERACTIVO DEL ONBOARDING ---
 function inicializarOnboardingUI() {
     currentOnboardingStep = 0;
     const step = onboardingData[0];
     
+    // Inyectar primer slide directamente
     document.getElementById('onboarding-title').innerText = step.title;
     document.getElementById('onboarding-description').innerText = step.description;
     document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
@@ -98,20 +98,20 @@ document.getElementById('btn-onboarding-next').addEventListener('click', () => {
     if (currentOnboardingStep < onboardingData.length) {
         const step = onboardingData[currentOnboardingStep];
         
-        // Modificación dinámica del DOM con las tarjetas del Figma
+        // Modificación dinámica controlada del DOM para evitar asincronía
         document.getElementById('onboarding-title').innerText = step.title;
         document.getElementById('onboarding-description').innerText = step.description;
         document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
         document.getElementById('onboarding-icon-badge').innerText = step.badge;
         
-        // Animación de los puntitos de paginación inferiores
+        // Mover los indicadores dinámicos del TabBar
         const dots = document.querySelectorAll('.carousel-indicators .dot');
         dots.forEach((dot, index) => {
             if (index === currentOnboardingStep) dot.classList.add('active');
             else dot.classList.remove('active');
         });
 
-        // Configurar gatillo de cierre en el último slide
+        // Configurar el gatillo final en el último slide
         if (currentOnboardingStep === onboardingData.length - 1) {
             document.getElementById('btn-onboarding-next').innerHTML = "Comenzar &check;";
         }
@@ -120,24 +120,24 @@ document.getElementById('btn-onboarding-next').addEventListener('click', () => {
         document.getElementById('screen-onboarding').style.display = "none";
         document.getElementById('app-main-layout').style.display = "flex";
         
-        // Forzar renderizado por defecto en el Home de Emergencias
+        // Cargar por defecto la sub-vista de S.O.S
         window.switchTabView('emergencias');
     }
 });
 
-// --- 🔄 CONTROLADOR DE PESTAÑAS INTERNAS (TAB BAR SUPERIOR/INFERIOR) ---
+// --- 🔄 CONTROLADOR DE PESTAÑAS INTERNAS (TAB BAR INFERIOR) ---
 window.switchTabView = function(targetView) {
-    // Apagar las tres sub-vistas estructurales
+    // Apagar las tres sub-vistas usando los IDs exactos del HTML
     document.getElementById('view-emergencias').style.display = "none";
     document.getElementById('view-videollamada').style.display = "none";
     document.getElementById('view-perfil').style.display = "none";
     
-    // Remover estados de enfoque visual del TabBar
+    // Remover estados de enfoque del menú inferior
     document.getElementById('tab-emergencias').classList.remove('active');
     document.getElementById('tab-videollamada').classList.remove('active');
     document.getElementById('tab-perfil').classList.remove('active');
 
-    // Activar la vista solicitada por el usuario sordo
+    // Encender la pestaña requerida
     if (targetView === 'emergencias') {
         document.getElementById('view-emergencias').style.display = "block";
         document.getElementById('tab-emergencias').classList.add('active');
@@ -150,15 +150,13 @@ window.switchTabView = function(targetView) {
     }
 };
 
-// --- ⚠️ DISPARADOR DE AUXILIO CRÍTICO: INSERCIÓN REAL REALTIME EN SUPABASE ---
+// --- ⚠️ TRANSMISIÓN EN TIEMPO REAL DEL BOTÓN S.O.S A CENCO ---
 window.activarBotonPanicoSOS = async function() {
     if (!usuarioLogeado) return;
 
-    // Localización céntrica en Concepción para el despliegue de patrullas del dashboard
+    // Localización céntrica operativa en Concepción (Sector Plaza Independencia)
     const latConcepcion = -36.82900000; 
     const lonConcepcion = -73.03980000;
-    
-    // Generación de identificador único compatible con la Clave Primaria de tu script SQL
     const correlativoFolio = "SOS-" + Math.floor(100 + Math.random() * 900);
 
     const { error } = await supabase
@@ -183,7 +181,7 @@ window.activarBotonPanicoSOS = async function() {
     }
 };
 
-// --- OPCIONES DE ACCESIBILIDAD ---
+// --- CONFIGURACIONES DE ACCESIBILIDAD MÓVIL ---
 let flagTamano = 0; 
 window.cambiarTamanoTexto = function() {
     if (flagTamano === 0) {
@@ -208,10 +206,13 @@ window.conmutarAltoContraste = function(checkbox) {
 // --- CERRAR SESIÓN ---
 window.cerrarSesionApp = function() {
     usuarioLogeado = null;
+    
+    // Limpiar campos e inyectar por defecto el correo y la contraseña nueva
+    document.getElementById('app-email').value = "juan.perez@email.com";
+    document.getElementById('app-pass').value = "cenco2026";
+    
+    // Retornar SPA a la pestaña de login directo
     document.getElementById('app-main-layout').style.display = "none";
     document.getElementById('screen-onboarding').style.display = "none";
     document.getElementById('screen-login').style.display = "flex";
-    
-    document.getElementById('app-email').value = "juan.perez@email.com";
-    document.getElementById('app-pass').value = "password123";
 };
