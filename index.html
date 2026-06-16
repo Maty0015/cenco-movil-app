@@ -2,225 +2,179 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Carabineros de Chile - Acceso Inclusivo</title>
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🟢</text></svg>">
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2280%22>🛡️</text></svg>">
 </head>
 <body>
 
-    <div id="screen-onboarding" class="app-screen">
-        <div class="onboarding-card">
-            <div class="video-container" id="onboarding-bg-video">
-                <span class="badge-video">📹 Video en LSCh</span>
-                <button class="btn-play-simulated">▶</button>
-                <div class="top-right-icon" id="onboarding-icon-badge">🛡️</div>
-            </div>
-            
-            <div class="onboarding-content">
-                <h2 id="onboarding-title">Bienvenido</h2>
-                <p id="onboarding-description">Esta aplicación está diseñada para facilitar la comunicación entre personas sordas y Carabineros de Chile.</p>
-                
-                <div class="carousel-indicators">
-                    <span class="dot active"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                </div>
-                
-                <button class="btn-primary" id="btn-onboarding-next">Siguiente ➔</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="screen-login" class="app-screen" style="display: none;">
-        <div class="institution-header">
-            <div class="logo-circular">🛡️</div>
-            <h2>Carabineros de Chile</h2>
+    <div id="screen-login" class="app-screen">
+        <div class="login-header-green">
+            <div class="institution-logo">🛡️</div>
+            <h1>Carabineros de Chile</h1>
             <p>Acceso para Personas Sordas</p>
         </div>
         
         <div class="login-container-card">
-            <h3>Iniciar Sesión</h3>
-            <p class="subtitle">Ingresa tus credenciales para continuar</p>
+            <h2>Iniciar Sesión</h2>
+            <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
             
             <form id="form-login-ciudadano">
-                <div class="input-field-group">
+                <div class="input-app-group">
                     <label>Correo Electrónico</label>
-                    <div class="input-icon-wrapper">
-                        <span class="input-icon">✉️</span>
+                    <div class="input-with-icon">
+                        <span class="field-icon">✉️</span>
                         <input type="email" id="app-email" required placeholder="tu@correo.com" value="juan.perez@email.com">
                     </div>
                 </div>
                 
-                <div class="input-field-group">
+                <div class="input-app-group">
                     <label>Contraseña</label>
-                    <div class="input-icon-wrapper">
-                        <span class="input-icon">🔒</span>
+                    <div class="input-with-icon">
+                        <span class="field-icon">🔒</span>
                         <input type="password" id="app-pass" required placeholder="••••••••" value="password123">
                     </div>
                 </div>
                 
-                <button type="submit" class="btn-primary" style="margin-top: 1rem;">Iniciar Sesión</button>
+                <button type="submit" class="btn-primary-app btn-login">Iniciar Sesión</button>
             </form>
             
-            <div class="test-credentials-box">
+            <div class="test-credentials-alert">
                 <p><strong>Credenciales de prueba:</strong></p>
                 <p>Email: <code>juan.perez@email.com</code></p>
                 <p>Contraseña: <code>password123</code></p>
             </div>
             
-            <a href="#" class="support-link" onclick="alert('Contactando a soporte técnico...')">¿Necesitas ayuda? Contacta a soporte técnico</a>
+            <a href="#" class="login-support-link" onclick="alert('Contactando a soporte técnico...')">¿Necesitas ayuda? Contacta a soporte técnico</a>
         </div>
     </div>
 
-    <div id="app-main-layout" style="display: none; height: 100vh; flex-direction: column;">
+    <div id="app-main-layout" style="display: none;">
         
-        <header class="app-top-navbar">
-            <div class="navbar-brand-wrapper">
-                <span style="font-size: 1.3rem;">🛡️</span>
+        <header class="app-header-green">
+            <div class="header-content">
+                <span class="institucional-logo-small">🛡️</span>
                 <span>Carabineros de Chile</span>
             </div>
         </header>
 
-        <main class="app-content-viewport">
+        <main class="app-viewport-content">
             
-            <section id="subview-emergencias" class="tab-view">
-                <div class="view-intro-center">
+            <section id="view-emergencias" class="tab-view">
+                <div class="view-header-center">
                     <h1>Centro de Emergencias</h1>
                     <p>Presione el botón en caso de peligro inminente.</p>
                 </div>
 
-                <div class="sos-button-outer-container">
+                <div class="sos-container">
                     <button class="btn-sos-trigger" onclick="window.activarBotonPanicoSOS()">
-                        <div class="sos-icon-graphic">⚠️</div>
-                        <span class="sos-main-text">S.O.S.</span>
-                        <span class="sos-sub-text">AYUDA INMEDIATA</span>
+                        <div class="sos-graphic">⚠️</div>
+                        <span class="sos-text-main">S.O.S.</span>
+                        <span class="sos-text-sub">AYUDA INMEDIATA</span>
                     </button>
                 </div>
 
-                <div class="menu-list-options">
-                    <div class="menu-option-item" onclick="window.reportarDelitoMenor()">
-                        <div class="option-icon-avatar color-orange">📝</div>
-                        <div class="option-info-text">
-                            <h4>Reportar Delito Menor</h4>
+                <div class="options-list">
+                    <div class="option-item" onclick="alert('Módulo de reporte disponible en la siguiente fase.')">
+                        <div class="option-icon bg-light-orange">📝</div>
+                        <div class="option-text">
+                            <h3>Reportar Delito Menor</h3>
                             <p>Robos, daños, extravíos. Sin riesgo vital.</p>
                         </div>
-                        <span class="arrow-indicator">ℹ️</span>
+                        <span class="arrow-icon">›</span>
                     </div>
 
-                    <div class="menu-option-item" onclick="window.verHistorialEnvios()">
-                        <div class="option-icon-avatar color-blue">🕒</div>
-                        <div class="option-info-text">
-                            <h4>Historial de Envíos</h4>
+                    <div class="option-item" onclick="alert('Consultando bitácora en Supabase...')">
+                        <div class="option-icon bg-light-blue">🕒</div>
+                        <div class="option-text">
+                            <h3>Historial de Envíos</h3>
                             <p>Ver S.O.S. y reportes anteriores.</p>
                         </div>
-                        <span class="arrow-indicator">➔</span>
+                        <span class="arrow-icon">›</span>
                     </div>
                 </div>
             </section>
 
-            <section id="subview-videollamada" class="tab-view" style="display: none;">
-                <div class="view-intro-left">
+            <section id="view-videollamada" class="tab-view" style="display: none;">
+                <div class="view-header-left">
                     <h1>Videollamadas</h1>
                     <p>Comuníquese en Lengua de Señas Chilena (LSCh) con un intérprete o funcionario capacitado.</p>
                 </div>
 
-                <div class="videocall-action-card" onclick="window.unirseAVideollamada()">
-                    <div class="videocall-card-icon">📹</div>
-                    <h3>Unirse a Videollamada</h3>
+                <div class="videocall-main-card" onclick="alert('Estableciendo conexión WebRTC con CENCO...')">
+                    <div class="videocall-icon-large">📹</div>
+                    <h2>Unirse a Videollamada</h2>
                     <p>Hablar con un operador ahora</p>
-                    <span class="status-pill-online">● Intérpretes disponibles</span>
+                    <span class="status-online">● Intérpretes disponibles</span>
                 </div>
 
-                <div class="menu-list-options" style="margin-top: 1.5rem;">
-                    <div class="menu-option-item" onclick="alert('Módulo de reserva disponible próximamente.')">
-                        <div class="option-icon-avatar color-green">📅</div>
-                        <div class="option-info-text">
-                            <h4>Reservar una Hora</h4>
+                <div class="options-list" style="margin-top: 20px;">
+                    <div class="option-item" onclick="alert('Módulo de agenda deshabilitado en modo demo.')">
+                        <div class="option-icon bg-light-green">📅</div>
+                        <div class="option-text">
+                            <h3>Reservar una Hora</h3>
                             <p>Programar videollamada</p>
-                            <div class="tags-row" style="margin-top: 6px;">
-                                <span class="mini-tag">🕒 Trámites</span>
-                                <span class="mini-tag">👤 Consultas</span>
-                            </div>
                         </div>
-                        <span class="arrow-indicator">ℹ️</span>
+                        <span class="arrow-icon">›</span>
                     </div>
                 </div>
 
-                <div class="disclaimer-text-box">
-                    🔒 Las videollamadas son estrictamente confidenciales. Si está en peligro, por favor regrese a la pestaña de <strong>Emergencias</strong> y presione <strong>S.O.S.</strong>
+                <div class="info-box-gray">
+                    <p>🔒 Las videollamadas son estrictamente confidenciales. Si está en peligro, por favor regrese a la pestaña de Emergencias y presione S.O.S.</p>
                 </div>
             </section>
 
-            <section id="subview-perfil" class="tab-view" style="display: none;">
-                <div class="profile-card-header">
+            <section id="view-perfil" class="tab-view" style="display: none;">
+                <div class="profile-header-card">
                     <div class="profile-avatar-placeholder">👤</div>
-                    <div class="profile-meta-data">
-                        <h2 id="profile-user-name">Cargando...</h2>
-                        <p id="profile-user-rut">RUT: --.---.-----</p>
+                    <div class="profile-data">
+                        <h2 id="profile-user-name">Juan Pérez</h2>
+                        <p id="profile-user-rut">RUT: --.---.---.-</p>
                     </div>
                 </div>
 
-                <h3 class="section-divider-title">AJUSTES DE ACCESIBILIDAD</h3>
-                <div class="menu-list-options">
-                    <div class="menu-option-item">
-                        <div class="option-icon-avatar color-purple">👁️</div>
-                        <div class="option-info-text">
-                            <h4>Tamaño de Texto</h4>
+                <h3 class="section-title">AJUSTES DE ACCESIBILIDAD</h3>
+                <div class="options-list">
+                    <div class="option-item">
+                        <div class="option-icon bg-light-purple">👁️</div>
+                        <div class="option-text">
+                            <h3>Tamaño de Texto</h3>
                             <p id="label-text-size">Grande</p>
                         </div>
-                        <span class="arrow-indicator" onclick="window.cambiarTamanoTexto()">➔</span>
+                        <span class="arrow-icon" style="cursor: pointer;" onclick="window.cambiarTamanoTexto()">›</span>
                     </div>
 
-                    <div class="menu-option-item">
-                        <div class="option-icon-avatar color-pink">🌗</div>
-                        <div class="option-info-text">
-                            <h4>Alto Contraste</h4>
+                    <div class="option-item">
+                        <div class="option-icon bg-light-pink">🌗</div>
+                        <div class="option-text">
+                            <h3>Alto Contraste</h3>
                             <p>Mayor contraste visual</p>
                         </div>
-                        <label class="toggle-switch-control">
+                        <label class="toggle-control">
                             <input type="checkbox" id="toggle-high-contrast" onchange="window.conmutarAltoContraste(this)">
-                            <span class="slider-round"></span>
+                            <span class="control-slider round"></span>
                         </label>
                     </div>
                 </div>
 
-                <h3 class="section-divider-title">GENERAL</h3>
-                <div class="menu-list-options">
-                    <div class="menu-option-item" onclick="alert('Configuración de notificaciones del sistema.')">
-                        <div class="option-icon-avatar color-gray">🔔</div>
-                        <div class="option-info-text">
-                            <h4>Notificaciones</h4>
-                        </div>
-                        <span class="arrow-indicator">➔</span>
-                    </div>
-
-                    <div class="menu-option-item" onclick="alert('Ajustes técnicos de la cuenta del ciudadano.')">
-                        <div class="option-icon-avatar color-gray">⚙️</div>
-                        <div class="option-info-text">
-                            <h4>Configuración de Cuenta</h4>
-                        </div>
-                        <span class="arrow-indicator">➔</span>
-                    </div>
-                </div>
-
-                <button class="btn-logout-app" onclick="window.cerrarSesionApp()">➔ Cerrar Sesión</button>
+                <button class="btn-logout" onclick="window.cerrarSesionApp()">➔ Cerrar Sesión</button>
             </section>
 
         </main>
 
-        <nav class="app-bottom-tabbar">
-            <button class="tabbar-item active" id="tab-btn-emergencias" onclick="window.switchTab('emergencias')">
-                <span class="tab-icon">⚠️</span>
-                <span class="tab-text">Emergencias</span>
+        <nav class="app-navbar-bottom">
+            <button class="navbar-item active" id="tab-emergencias" onclick="window.switchTabView('emergencias')">
+                <span class="nav-icon">⚠️</span>
+                <span class="nav-text">Emergencias</span>
             </button>
-            <button class="tabbar-item" id="tab-btn-videollamada" onclick="window.switchTab('videollamada')">
-                <span class="tab-icon">📹</span>
-                <span class="tab-text">Videollamada</span>
+            <button class="navbar-item" id="tab-videollamada" onclick="window.switchTabView('videollamada')">
+                <span class="nav-icon">📹</span>
+                <span class="nav-text">Videollamada</span>
             </button>
-            <button class="tabbar-item" id="tab-btn-perfil" onclick="window.switchTab('perfil')">
-                <span class="tab-icon">👤</span>
-                <span class="tab-text">Mi Perfil</span>
+            <button class="navbar-item" id="tab-perfil" onclick="window.switchTabView('perfil')">
+                <span class="nav-icon">👤</span>
+                <span class="nav-text">Mi Perfil</span>
             </button>
         </nav>
 
