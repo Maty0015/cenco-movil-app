@@ -20,7 +20,7 @@
             <h2>Iniciar Sesión</h2>
             <p class="login-subtitle">Ingresa tus credenciales para continuar</p>
             
-            <form id="form-login-ciudadano">
+            <form id="form-login-ciudadano" onsubmit="window.procesarLoginMovil(event)">
                 <div class="input-app-group">
                     <label>Correo Electrónico</label>
                     <div class="input-with-icon">
@@ -133,7 +133,7 @@
                 </div>
 
                 <div class="options-list" style="margin-top: 20px;">
-                    <div class="option-item">
+                    <div class="option-item" onclick="alert('Módulo de agenda deshabilitado en modo demo.')">
                         <div class="option-icon bg-light-green">📅</div>
                         <div class="option-text">
                             <h3>Reservar una Hora</h3>

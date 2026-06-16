@@ -30,43 +30,51 @@ const onboardingData = [
     }
 ];
 
-// --- 🔐 PASO 1: FORMULARIO DE LOGIN (PANTALLA INICIAL) ---
-document.getElementById('form-login-ciudadano').addEventListener('submit', async (e) => {
-    e.preventDefault();
+// --- 🔐 PASO 1: PROCESAR LOGEO DIRECTO GLOBAL (Gatillado por el onsubmit del HTML) ---
+window.procesarLoginMovil = async function(e) {
+    e.preventDefault(); // Detiene la recarga automática que destruye la sesión en Vercel
+    
     const emailStr = document.getElementById('app-email').value.trim();
     const passwordStr = document.getElementById('app-pass').value.trim();
 
-    // Consulta en Supabase
-    const { data: ciudadanos, error } = await supabase
-        .from('perfiles_ciudadanos')
-        .select('*')
-        .eq('email', emailStr)
-        .eq('contrasena_plana', passwordStr);
+    console.log("Conectando con Supabase para verificar usuario...");
 
-    if (error) {
-        alert("Error de conexión a Supabase: " + error.message);
-        return;
+    try {
+        // Consulta relacional directa a tu tabla perfiles_ciudadanos
+        const { data: ciudadanos, error } = await supabase
+            .from('perfiles_ciudadanos')
+            .select('*')
+            .eq('email', emailStr)
+            .eq('contrasena_plana', passwordStr);
+
+        if (error) {
+            alert("Error de conexión a Supabase: " + error.message);
+            return;
+        }
+
+        if (ciudadanos && ciudadanos.length > 0) {
+            usuarioLogeado = ciudadanos[0];
+            
+            // Inyectar los datos reales recuperados de tu DB en la vista de Perfil
+            document.getElementById('profile-user-name').innerText = usuarioLogeado.nombre_completo;
+            document.getElementById('profile-user-rut').innerText = `RUT: ${usuarioLogeado.rut || '12.345.678-9'}`;
+            
+            // Transición SPA: Apagar Login, Encender Onboarding/Bienvenida
+            document.getElementById('screen-login').style.display = "none";
+            document.getElementById('screen-onboarding').style.display = "flex";
+            
+            // Forzar reinicio limpio del carrusel en el índice cero
+            inicializarOnboardingUI();
+        } else {
+            alert("Las credenciales ingresadas no corresponden a ningún ciudadano sordo registrado.");
+        }
+    } catch (err) {
+        console.error("Error crítico de autenticación:", err);
+        alert("No se pudo conectar al servidor de emergencias.");
     }
+};
 
-    if (ciudadanos && ciudadanos.length > 0) {
-        usuarioLogeado = ciudadanos[0];
-        
-        // Cargar datos en la UI del Perfil interno
-        document.getElementById('profile-user-name').innerText = usuarioLogeado.nombre_completo;
-        document.getElementById('profile-user-rut').innerText = `RUT: ${usuarioLogeado.rut || '12.345.678-9'}`;
-        
-        // Esconder el login y encender la Bienvenida (Onboarding)
-        document.getElementById('screen-login').style.display = "none";
-        document.getElementById('screen-onboarding').style.display = "flex";
-        
-        // Forzar inicialización limpia del carrusel en el paso 0
-        inicializarOnboardingUI();
-    } else {
-        alert("Credenciales digitales inválidas para emergencias.");
-    }
-});
-
-// --- 🎬 PASO 2: INICIALIZACIÓN Y NAVEGACIÓN DEL ONBOARDING ---
+// --- 🎬 PASO 2: CONTROL Y MOVIMIENTO INTERACTIVO DEL ONBOARDING ---
 function inicializarOnboardingUI() {
     currentOnboardingStep = 0;
     const step = onboardingData[0];
@@ -90,43 +98,46 @@ document.getElementById('btn-onboarding-next').addEventListener('click', () => {
     if (currentOnboardingStep < onboardingData.length) {
         const step = onboardingData[currentOnboardingStep];
         
-        // Actualizar elementos dinámicos
+        // Modificación dinámica del DOM con las tarjetas del Figma
         document.getElementById('onboarding-title').innerText = step.title;
         document.getElementById('onboarding-description').innerText = step.description;
         document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
         document.getElementById('onboarding-icon-badge').innerText = step.badge;
         
-        // Actualizar puntitos de progreso
+        // Animación de los puntitos de paginación inferiores
         const dots = document.querySelectorAll('.carousel-indicators .dot');
         dots.forEach((dot, index) => {
             if (index === currentOnboardingStep) dot.classList.add('active');
             else dot.classList.remove('active');
         });
 
-        // Si llegamos a la última pantalla del carrusel
+        // Configurar gatillo de cierre en el último slide
         if (currentOnboardingStep === onboardingData.length - 1) {
             document.getElementById('btn-onboarding-next').innerHTML = "Comenzar &check;";
         }
     } else {
-        // --- 🚨 PASO 3: ENTRAR AL HOME PRINCIPAL S.O.S ---
+        // --- 🚨 PASO 3: ENTRAR DEFINITIVAMENTE AL CENTRO DE EMERGENCIAS S.O.S ---
         document.getElementById('screen-onboarding').style.display = "none";
         document.getElementById('app-main-layout').style.display = "flex";
         
-        // Forzar vista de emergencias activa
+        // Forzar renderizado por defecto en el Home de Emergencias
         window.switchTabView('emergencias');
     }
 });
 
-// --- CONTROLADOR DE PESTAÑAS (TAB BAR) ---
+// --- 🔄 CONTROLADOR DE PESTAÑAS INTERNAS (TAB BAR SUPERIOR/INFERIOR) ---
 window.switchTabView = function(targetView) {
+    // Apagar las tres sub-vistas estructurales
     document.getElementById('view-emergencias').style.display = "none";
     document.getElementById('view-videollamada').style.display = "none";
     document.getElementById('view-perfil').style.display = "none";
     
+    // Remover estados de enfoque visual del TabBar
     document.getElementById('tab-emergencias').classList.remove('active');
     document.getElementById('tab-videollamada').classList.remove('active');
     document.getElementById('tab-perfil').classList.remove('active');
 
+    // Activar la vista solicitada por el usuario sordo
     if (targetView === 'emergencias') {
         document.getElementById('view-emergencias').style.display = "block";
         document.getElementById('tab-emergencias').classList.add('active');
@@ -139,12 +150,15 @@ window.switchTabView = function(targetView) {
     }
 };
 
-// --- EMISIÓN DE SEÑAL S.O.S A SUPABASE ---
+// --- ⚠️ DISPARADOR DE AUXILIO CRÍTICO: INSERCIÓN REAL REALTIME EN SUPABASE ---
 window.activarBotonPanicoSOS = async function() {
     if (!usuarioLogeado) return;
 
+    // Localización céntrica en Concepción para el despliegue de patrullas del dashboard
     const latConcepcion = -36.82900000; 
     const lonConcepcion = -73.03980000;
+    
+    // Generación de identificador único compatible con la Clave Primaria de tu script SQL
     const correlativoFolio = "SOS-" + Math.floor(100 + Math.random() * 900);
 
     const { error } = await supabase
@@ -158,14 +172,14 @@ window.activarBotonPanicoSOS = async function() {
             ubicacion_texto: "Sector Central, Concepción",
             latitud: latConcepcion,
             longitud: lonConcepcion,
-            detalles_reporte: "Activación Crítica de botón de pánico desde aplicación móvil inclusiva.",
+            detalles_reporte: "Activación Crítica de auxilio desde dispositivo móvil accesible.",
             estado_procedimiento: "CRÍTICO"
         }]);
 
     if (error) {
-        alert("Ocurrió un inconveniente al emitir señal: " + error.message);
+        alert("Error de comunicación de auxilio: " + error.message);
     } else {
-        alert(`🚨 Alerta SOS enviada con éxito.\nFolio: ${correlativoFolio}\n\nCarabineros ha recibido su ubicación actual en el Dashboard de Concepción.`);
+        alert(`🚨 S.O.S Enviado.\nFolio asignado: ${correlativoFolio}\n\nSeñal de auxilio transmitida con éxito. Carabineros ha recibido su ubicación en el panel de CENCO.`);
     }
 };
 
