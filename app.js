@@ -9,10 +9,19 @@ let usuarioLogeado = null;
 
 // --- PROCESAR INICIO DE SESIÓN DIRECTO AL HOME ---
 window.procesarLoginDirectoSOS = async function(e) {
-    e.preventDefault(); // Detiene la recarga nativa de Vercel
+    // CORREGIDO: Forzamos la detención inmediata y el freno de burbujeo del click
+    if (e) {
+        e.preventDefault();
+        e.stopPropagation();
+    }
     
     const emailStr = document.getElementById('app-email').value.trim();
     const passwordStr = document.getElementById('app-pass').value.trim();
+
+    if (!emailStr || !passwordStr) {
+        alert("Por favor rellene los campos solicitados.");
+        return false;
+    }
 
     try {
         const { data: ciudadanos, error } = await supabase
@@ -23,7 +32,7 @@ window.procesarLoginDirectoSOS = async function(e) {
 
         if (error) {
             alert("Error devuelto por Supabase: " + error.message);
-            return;
+            return false;
         }
 
         if (ciudadanos && ciudadanos.length > 0) {
@@ -45,6 +54,8 @@ window.procesarLoginDirectoSOS = async function(e) {
     } catch (err) {
         alert("Error crítico en la consulta: " + err.message);
     }
+    
+    return false;
 };
 
 // --- CONTROLADOR DE PESTAÑAS (TAB BAR INFERIOR) ---
@@ -104,4 +115,8 @@ window.cerrarSesionApp = function() {
     usuarioLogeado = null;
     document.getElementById('app-main-layout').style.display = "none";
     document.getElementById('screen-login').style.display = "flex";
+    
+    // Limpiar inputs al salir
+    document.getElementById('app-email').value = "";
+    document.getElementById('app-pass').value = "";
 };
