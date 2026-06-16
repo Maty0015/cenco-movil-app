@@ -24,44 +24,13 @@ const onboardingData = [
     },
     {
         title: "Videollamadas",
-        description: "Conéctate por videollamada con un intérprete de Lengua de Señas Chilena (LSCh) para trámites o consultas.",
+        description: "Conéctate por videollamada con un interpreter de Lengua de Señas Chilena (LSCh) para trámites o consultas.",
         videoBg: "url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=400&q=80')",
         badge: "📹"
     }
 ];
 
-// --- LOGICA DE CONTROL DEL CARRUSEL (ONBOARDING) ---
-document.getElementById('btn-onboarding-next').addEventListener('click', () => {
-    currentOnboardingStep++;
-    
-    if (currentOnboardingStep < onboardingData.length) {
-        const step = onboardingData[currentOnboardingStep];
-        
-        // Actualizar textos e imágenes simuladas en el HTML
-        document.getElementById('onboarding-title').innerText = step.title;
-        document.getElementById('onboarding-description').innerText = step.description;
-        document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
-        document.getElementById('onboarding-icon-badge').innerText = step.badge;
-        
-        // Actualizar puntitos verdes indicadores de progreso
-        const dots = document.querySelectorAll('.carousel-indicators .dot');
-        dots.forEach((dot, index) => {
-            if (index === currentOnboardingStep) dot.classList.add('active');
-            else dot.classList.remove('active');
-        });
-
-        // Si llegamos a la última pantalla, el botón cambia para finalizar
-        if (currentOnboardingStep === onboardingData.length - 1) {
-            document.getElementById('btn-onboarding-next').innerHTML = "Comenzar &check;";
-        }
-    } else {
-        // Fin del carrusel -> Transición SPA hacia la pantalla de Login
-        document.getElementById('screen-onboarding').style.display = "none";
-        document.getElementById('screen-login').style.display = "flex";
-    }
-});
-
-// --- ENTRADA AL SISTEMA (LOGIN) ---
+// --- 🔐 PASO 1: ENTRADA AL SISTEMA (LOGIN AL ENTRAR A LA APP) ---
 document.getElementById('form-login-ciudadano').addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailStr = document.getElementById('app-email').value.trim();
@@ -86,30 +55,77 @@ document.getElementById('form-login-ciudadano').addEventListener('submit', async
         document.getElementById('profile-user-name').innerText = usuarioLogeado.nombre_completo;
         document.getElementById('profile-user-rut').innerText = `RUT: ${usuarioLogeado.rut || '12.345.678-9'}`;
         
-        // Transición SPA hacia la vista del contenedor principal de la App
+        // CORREGIDO: Al logearse con éxito, pasamos inmediatamente al Onboarding/Bienvenida
         document.getElementById('screen-login').style.display = "none";
-        document.getElementById('app-main-layout').style.display = "flex";
+        document.getElementById('screen-onboarding').style.display = "flex";
         
-        // Cargar la pestaña de emergencies por defecto
-        window.switchTabView('emergencias');
+        // Inicializar el primer elemento del carrusel visualmente
+        inicializarOnboardingUI();
     } else {
         alert("Credenciales digitales inválidas para emergencias.");
     }
 });
 
-// --- CONTROLADOR DE NAVEGACIÓN INFERIOR (TAB BAR ADAPTADO AL NUEVO HTML) ---
+// --- 🎬 PASO 2: LÓGICA DE CONTROL DEL CARRUSEL (ONBOARDING POST-LOGEO) ---
+function inicializarOnboardingUI() {
+    currentOnboardingStep = 0;
+    const step = onboardingData[0];
+    document.getElementById('onboarding-title').innerText = step.title;
+    document.getElementById('onboarding-description').innerText = step.description;
+    document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
+    document.getElementById('onboarding-icon-badge').innerText = step.badge;
+    document.getElementById('btn-onboarding-next').innerHTML = "Siguiente &rsaquo;";
+    
+    const dots = document.querySelectorAll('.carousel-indicators .dot');
+    dots.forEach((dot, index) => {
+        if (index === 0) dot.classList.add('active');
+        else dot.classList.remove('active');
+    });
+}
+
+document.getElementById('btn-onboarding-next').addEventListener('click', () => {
+    currentOnboardingStep++;
+    
+    if (currentOnboardingStep < onboardingData.length) {
+        const step = onboardingData[currentOnboardingStep];
+        
+        // Actualizar textos e imágenes simuladas en el HTML
+        document.getElementById('onboarding-title').innerText = step.title;
+        document.getElementById('onboarding-description').innerText = step.description;
+        document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
+        document.getElementById('onboarding-icon-badge').innerText = step.badge;
+        
+        // Actualizar puntitos indicadores de progreso
+        const dots = document.querySelectorAll('.carousel-indicators .dot');
+        dots.forEach((dot, index) => {
+            if (index === currentOnboardingStep) dot.classList.add('active');
+            else dot.classList.remove('active');
+        });
+
+        // Si llegamos a la última pantalla, el botón cambia para finalizar
+        if (currentOnboardingStep === onboardingData.length - 1) {
+            document.getElementById('btn-onboarding-next').innerHTML = "Comenzar &check;";
+        }
+    } else {
+        // --- 🚨 PASO 3: IR A LA PANTALLA PRINCIPAL S.O.S AL FINALIZAR EL CARRUSEL ---
+        document.getElementById('screen-onboarding').style.display = "none";
+        document.getElementById('app-main-layout').style.display = "flex";
+        
+        // Cargar la pestaña de emergencias por defecto
+        window.switchTabView('emergencias');
+    }
+});
+
+// --- CONTROLADOR DE NAVEGACIÓN INFERIOR (TAB BAR) ---
 window.switchTabView = function(targetView) {
-    // Apagar todas las sub-vistas del visor elástico usando los nuevos IDs
     document.getElementById('view-emergencias').style.display = "none";
     document.getElementById('view-videollamada').style.display = "none";
     document.getElementById('view-perfil').style.display = "none";
     
-    // Quitar el estado activo de los botones del menú inferior
     document.getElementById('tab-emergencias').classList.remove('active');
     document.getElementById('tab-videollamada').classList.remove('active');
     document.getElementById('tab-perfil').classList.remove('active');
 
-    // Encender la pestaña solicitada y enfocar su respectivo botón
     if (targetView === 'emergencias') {
         document.getElementById('view-emergencias').style.display = "block";
         document.getElementById('tab-emergencias').classList.add('active');
@@ -126,14 +142,10 @@ window.switchTabView = function(targetView) {
 window.activarBotonPanicoSOS = async function() {
     if (!usuarioLogeado) return;
 
-    // Coordenadas operativas reales en el sector céntrico de Concepción
     const latConcepcion = -36.82900000; 
     const lonConcepcion = -73.03980000;
-
-    // Generar Folio aleatorio compatible con la estructura VARCHAR de incidentes_cenco
     const correlativoFolio = "SOS-" + Math.floor(100 + Math.random() * 900);
 
-    // Inserción directa en la tabla de incidentes de tu base de datos Supabase
     const { error } = await supabase
         .from('incidentes_cenco')
         .insert([{
@@ -181,22 +193,13 @@ window.conmutarAltoContraste = function(checkbox) {
 // --- CONTROL DE SESIÓN ---
 window.cerrarSesionApp = function() {
     usuarioLogeado = null;
-    currentOnboardingStep = 0;
     
-    // Al cerrar sesión, la SPA retorna ordenadamente al paso 1 del Onboarding
-    document.getElementById('onboarding-title').innerText = onboardingData[0].title;
-    document.getElementById('onboarding-description').innerText = onboardingData[0].description;
-    document.getElementById('onboarding-bg-video').style.backgroundImage = onboardingData[0].videoBg;
-    document.getElementById('onboarding-icon-badge').innerText = onboardingData[0].badge;
-    document.getElementById('btn-onboarding-next').innerHTML = "Siguiente &rsaquo;";
+    // Limpiar los campos del formulario de entrada
+    document.getElementById('app-email').value = "juan.perez@email.com";
+    document.getElementById('app-pass').value = "password123";
     
-    const dots = document.querySelectorAll('.carousel-indicators .dot');
-    dots.forEach((dot, idx) => idx === 0 ? dot.classList.add('active') : dot.classList.remove('active'));
-
-    // Reordenar visibilidad de contenedores principales
+    // Al cerrar sesión, la SPA retorna ordenadamente al paso de Login directo
     document.getElementById('app-main-layout').style.display = "none";
-    document.getElementById('screen-onboarding').style.display = "flex";
+    document.getElementById('screen-onboarding').style.display = "none";
+    document.getElementById('screen-login').style.display = "flex";
 };
-
-// Carga asíncrona de la primera foto de fondo para el visor de video simulado
-document.getElementById('onboarding-bg-video').style.backgroundImage = onboardingData[0].videoBg;
