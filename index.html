@@ -9,30 +9,7 @@
 </head>
 <body>
 
-    <div id="screen-onboarding" class="app-screen">
-        <div class="onboarding-card">
-            <div class="video-container" id="onboarding-bg-video" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=400&q=80');">
-                <span class="badge-video">📹 Video en LSCh</span>
-                <button class="btn-play-simulated">▶</button>
-                <div class="top-right-icon-onboarding" id="onboarding-icon-badge">🛡️</div>
-            </div>
-            
-            <div class="onboarding-content">
-                <h2 id="onboarding-title">Bienvenido</h2>
-                <p id="onboarding-description">Esta aplicación está diseñada para facilitar la comunicación entre personas sordas y Carabineros de Chile.</p>
-                
-                <div class="carousel-indicators">
-                    <span class="dot active"></span>
-                    <span class="dot"></span>
-                    <span class="dot"></span>
-                </div>
-                
-                <button class="btn-primary-app" id="btn-onboarding-next">Siguiente &rsaquo;</button>
-            </div>
-        </div>
-    </div>
-
-    <div id="screen-login" class="app-screen" style="display: none;">
+    <div id="screen-login" class="app-screen">
         <div class="login-header-green">
             <div class="institution-logo">🛡️</div>
             <h1>Carabineros de Chile</h1>
@@ -70,6 +47,29 @@
             </div>
             
             <a href="#" class="login-support-link" onclick="alert('Contactando a soporte técnico...')">¿Necesitas ayuda? Contacta a soporte técnico</a>
+        </div>
+    </div>
+
+    <div id="screen-onboarding" class="app-screen" style="display: none;">
+        <div class="onboarding-card">
+            <div class="video-container" id="onboarding-bg-video" style="background-image: url('https://images.unsplash.com/photo-1573164713988-8665fc963095?auto=format&fit=crop&w=400&q=80');">
+                <span class="badge-video">📹 Video en LSCh</span>
+                <button class="btn-play-simulated">▶</button>
+                <div class="top-right-icon-onboarding" id="onboarding-icon-badge">🛡️</div>
+            </div>
+            
+            <div class="onboarding-content">
+                <h2 id="onboarding-title">Bienvenido</h2>
+                <p id="onboarding-description">Esta aplicación está diseñada para facilitar la comunicación entre personas sordas y Carabineros de Chile.</p>
+                
+                <div class="carousel-indicators">
+                    <span class="dot active"></span>
+                    <span class="dot"></span>
+                    <span class="dot"></span>
+                </div>
+                
+                <button class="btn-primary-app" id="btn-onboarding-next">Siguiente &rsaquo;</button>
+            </div>
         </div>
     </div>
 
@@ -133,7 +133,7 @@
                 </div>
 
                 <div class="options-list" style="margin-top: 20px;">
-                    <div class="option-item" onclick="alert('Módulo de agenda deshabilitado en modo demo.')">
+                    <div class="option-item">
                         <div class="option-icon bg-light-green">📅</div>
                         <div class="option-text">
                             <h3>Reservar una Hora</h3>

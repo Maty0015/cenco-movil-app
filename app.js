@@ -8,7 +8,7 @@ const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 let usuarioLogeado = null;
 let currentOnboardingStep = 0;
 
-// Configuración de los recursos del carrusel (Datos interactivos para el Onboarding)
+// Configuración de los recursos del carrusel (Datos del Onboarding)
 const onboardingData = [
     {
         title: "Bienvenido",
@@ -24,19 +24,19 @@ const onboardingData = [
     },
     {
         title: "Videollamadas",
-        description: "Conéctate por videollamada con un interpreter de Lengua de Señas Chilena (LSCh) para trámites o consultas.",
+        description: "Conéctate por videollamada con un intérprete de Lengua de Señas Chilena (LSCh) para trámites o consultas.",
         videoBg: "url('https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?auto=format&fit=crop&w=400&q=80')",
         badge: "📹"
     }
 ];
 
-// --- 🔐 PASO 1: ENTRADA AL SISTEMA (LOGIN AL ENTRAR A LA APP) ---
+// --- 🔐 PASO 1: FORMULARIO DE LOGIN (PANTALLA INICIAL) ---
 document.getElementById('form-login-ciudadano').addEventListener('submit', async (e) => {
     e.preventDefault();
     const emailStr = document.getElementById('app-email').value.trim();
     const passwordStr = document.getElementById('app-pass').value.trim();
 
-    // Consulta fiscal en Supabase según tu tabla de perfiles_ciudadanos
+    // Consulta en Supabase
     const { data: ciudadanos, error } = await supabase
         .from('perfiles_ciudadanos')
         .select('*')
@@ -51,25 +51,26 @@ document.getElementById('form-login-ciudadano').addEventListener('submit', async
     if (ciudadanos && ciudadanos.length > 0) {
         usuarioLogeado = ciudadanos[0];
         
-        // Cargar datos de la sesión del ciudadano en la UI de Perfil
+        // Cargar datos en la UI del Perfil interno
         document.getElementById('profile-user-name').innerText = usuarioLogeado.nombre_completo;
         document.getElementById('profile-user-rut').innerText = `RUT: ${usuarioLogeado.rut || '12.345.678-9'}`;
         
-        // CORREGIDO: Al logearse con éxito, pasamos inmediatamente al Onboarding/Bienvenida
+        // Esconder el login y encender la Bienvenida (Onboarding)
         document.getElementById('screen-login').style.display = "none";
         document.getElementById('screen-onboarding').style.display = "flex";
         
-        // Inicializar el primer elemento del carrusel visualmente
+        // Forzar inicialización limpia del carrusel en el paso 0
         inicializarOnboardingUI();
     } else {
         alert("Credenciales digitales inválidas para emergencias.");
     }
 });
 
-// --- 🎬 PASO 2: LÓGICA DE CONTROL DEL CARRUSEL (ONBOARDING POST-LOGEO) ---
+// --- 🎬 PASO 2: INICIALIZACIÓN Y NAVEGACIÓN DEL ONBOARDING ---
 function inicializarOnboardingUI() {
     currentOnboardingStep = 0;
     const step = onboardingData[0];
+    
     document.getElementById('onboarding-title').innerText = step.title;
     document.getElementById('onboarding-description').innerText = step.description;
     document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
@@ -89,34 +90,34 @@ document.getElementById('btn-onboarding-next').addEventListener('click', () => {
     if (currentOnboardingStep < onboardingData.length) {
         const step = onboardingData[currentOnboardingStep];
         
-        // Actualizar textos e imágenes simuladas en el HTML
+        // Actualizar elementos dinámicos
         document.getElementById('onboarding-title').innerText = step.title;
         document.getElementById('onboarding-description').innerText = step.description;
         document.getElementById('onboarding-bg-video').style.backgroundImage = step.videoBg;
         document.getElementById('onboarding-icon-badge').innerText = step.badge;
         
-        // Actualizar puntitos indicadores de progreso
+        // Actualizar puntitos de progreso
         const dots = document.querySelectorAll('.carousel-indicators .dot');
         dots.forEach((dot, index) => {
             if (index === currentOnboardingStep) dot.classList.add('active');
             else dot.classList.remove('active');
         });
 
-        // Si llegamos a la última pantalla, el botón cambia para finalizar
+        // Si llegamos a la última pantalla del carrusel
         if (currentOnboardingStep === onboardingData.length - 1) {
             document.getElementById('btn-onboarding-next').innerHTML = "Comenzar &check;";
         }
     } else {
-        // --- 🚨 PASO 3: IR A LA PANTALLA PRINCIPAL S.O.S AL FINALIZAR EL CARRUSEL ---
+        // --- 🚨 PASO 3: ENTRAR AL HOME PRINCIPAL S.O.S ---
         document.getElementById('screen-onboarding').style.display = "none";
         document.getElementById('app-main-layout').style.display = "flex";
         
-        // Cargar la pestaña de emergencias por defecto
+        // Forzar vista de emergencias activa
         window.switchTabView('emergencias');
     }
 });
 
-// --- CONTROLADOR DE NAVEGACIÓN INFERIOR (TAB BAR) ---
+// --- CONTROLADOR DE PESTAÑAS (TAB BAR) ---
 window.switchTabView = function(targetView) {
     document.getElementById('view-emergencias').style.display = "none";
     document.getElementById('view-videollamada').style.display = "none";
@@ -138,7 +139,7 @@ window.switchTabView = function(targetView) {
     }
 };
 
-// --- ACCIÓN CRÍTICA: BOTÓN DE PÁNICO S.O.S ---
+// --- EMISIÓN DE SEÑAL S.O.S A SUPABASE ---
 window.activarBotonPanicoSOS = async function() {
     if (!usuarioLogeado) return;
 
@@ -168,7 +169,7 @@ window.activarBotonPanicoSOS = async function() {
     }
 };
 
-// --- OPCIONES DE ACCESIBILIDAD INTERACTIVAS ---
+// --- OPCIONES DE ACCESIBILIDAD ---
 let flagTamano = 0; 
 window.cambiarTamanoTexto = function() {
     if (flagTamano === 0) {
@@ -190,16 +191,13 @@ window.conmutarAltoContraste = function(checkbox) {
     }
 };
 
-// --- CONTROL DE SESIÓN ---
+// --- CERRAR SESIÓN ---
 window.cerrarSesionApp = function() {
     usuarioLogeado = null;
-    
-    // Limpiar los campos del formulario de entrada
-    document.getElementById('app-email').value = "juan.perez@email.com";
-    document.getElementById('app-pass').value = "password123";
-    
-    // Al cerrar sesión, la SPA retorna ordenadamente al paso de Login directo
     document.getElementById('app-main-layout').style.display = "none";
     document.getElementById('screen-onboarding').style.display = "none";
     document.getElementById('screen-login').style.display = "flex";
+    
+    document.getElementById('app-email').value = "juan.perez@email.com";
+    document.getElementById('app-pass').value = "password123";
 };
