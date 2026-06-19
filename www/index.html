@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>SOS Carabineros - Ciudadano</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+
+    <div class="app-viewport">
+
+        <div id="wrapper-login-movil" class="app-screen" style="display: flex; flex-direction: column; height: 100%;">
+            <div class="login-header-movil">
+                <div class="escudo-circulo">🛡️</div>
+                <h2>Carabineros de Chile</h2>
+                <p>Canal de Emergencia Inclusivo</p>
+            </div>
+            <div class="login-body-movil">
+                <form onsubmit="window.procesarLoginMovil(event)">
+                    <div class="form-group-movil">
+                        <label>Correo Electrónico</label>
+                        <input type="email" id="movil-email" value="juan.perez@email.com" required>
+                    </div>
+                    <div class="form-group-movil">
+                        <label>Contraseña</label>
+                        <input type="password" id="movil-pass" value="password123" required>
+                    </div>
+                    <button type="submit" class="btn-submit-institucional" style="margin-top: 10px;">➔ Ingresar al Sistema</button>
+                </form>
+            </div>
+        </div>
+
+        <div id="wrapper-plataforma-movil" style="display: none; flex-direction: column; height: 100%; width: 100%;">
+            <header class="main-header-movil">
+                <div class="header-content-movil">
+                    <span>CENCO MÓVIL 🟢</span>
+                </div>
+            </header>
+
+            <div id="subview-sos" class="subview-container" style="flex-grow: 1; display: flex;">
+                <div style="text-align: center;">
+                    <h2>Centro de Emergencias</h2>
+                    <p style="color: var(--texto-mutado); margin-top: 4px;">Presione el botón para reportar peligro vital</p>
+                </div>
+
+                <div class="sos-flex-container">
+                    <div class="pulse-wave" id="wave-1"></div>
+                    <div class="pulse-wave" id="wave-2"></div>
+                    <button class="btn-sos-radial" onclick="window.dispararSOSInstitucional()">S.O.S.</button>
+                </div>
+            </div>
+
+            <div id="subview-video" class="subview-container" style="flex-grow: 1; display: none;">
+                <h2>Videollamada 📹</h2>
+                <p style="color: var(--texto-mutado);">Canal LSCh en tiempo real</p>
+            </div>
+
+            <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none;">
+                <h2>Mi Perfil 👤</h2>
+                <p style="color: var(--texto-mutado);">Datos del ciudadano</p>
+            </div>
+
+            <nav class="bottom-nav-movil">
+                <a href="#" id="nav-sos" class="nav-item-movil active" onclick="window.navegarApp('sos')"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.4rem;"></i><span>Emergencia</span></a>
+                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-video" style="font-size: 1.4rem;"></i><span>Videollamada</span></a>
+                <a href="#" id="nav-perfil" class="nav-item-movil" onclick="window.navegarApp('perfil')"><i class="fa-solid fa-user" style="font-size: 1.4rem;"></i><span>Mi Perfil</span></a>
+            </nav>
+        </div>
+
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="app.js"></script>
+</body>
+</html>

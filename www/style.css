@@ -1,0 +1,192 @@
+:root {
+    /* Variables institucionales calcadas de tu Dashboard */
+    --verde-carabinero: #004d35;
+    --verde-hover: #003625;
+    --bg-gris: #f4f6f8;
+    --texto-oscuro: #1e293b;
+    --texto-mutado: #64748b;
+    --rojo-critico: #ff4757;
+    --blanco: #ffffff;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+/* Fuerza el centrado de la simulación móvil en pantallas de escritorio */
+body {
+    background-color: var(--texto-oscuro);
+    color: var(--texto-oscuro);
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+}
+
+/* Contenedor elástico que replica el marco hermético de un celular */
+.app-viewport {
+    width: 100vw;
+    height: 100vh;
+    max-width: 450px; /* Estándar estricto de UI móvil */
+    background-color: var(--bg-gris);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.5);
+    overflow: hidden;
+}
+
+/* 🔐 VISTA 1: INICIAR SESIÓN (FIGMA EXACTO) */
+.login-header-movil {
+    background-color: var(--verde-carabinero);
+    padding: 40px 20px;
+    text-align: center;
+    color: white;
+    border-bottom-left-radius: 28px;
+    border-bottom-right-radius: 28px;
+}
+
+.escudo-circulo {
+    width: 75px;
+    height: 75px;
+    background: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.2rem;
+    margin: 0 auto 12px auto;
+}
+
+.login-body-movil {
+    padding: 25px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.form-group-movil {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+}
+
+.form-group-movil label {
+    font-weight: 600;
+    font-size: 0.85rem;
+}
+
+.form-group-movil input {
+    padding: 14px;
+    border: 1px solid #cbd5e1;
+    border-radius: 10px;
+    font-size: 1rem;
+    background: var(--blanco);
+}
+
+.btn-submit-institucional {
+    width: 100%;
+    padding: 14px;
+    background-color: var(--verde-carabinero);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+/* 🛡️ ENTORNO INTERNO DEL CIUDADANO (Oculto inicialmente) */
+.main-header-movil {
+    background: var(--verde-carabinero);
+    color: white;
+    padding: 12px 20px;
+    padding-top: 25px;
+    font-weight: 700;
+}
+
+/* Contenedor modular elástico de las sub-vistas */
+.subview-container {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+/* 🚨 COMPONENTE DEL BOTÓN SOS RADIAL ELÁSTICO */
+.sos-flex-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    margin: auto 0;
+    position: relative;
+    height: 240px; /* Área de impacto elástico */
+}
+
+.btn-sos-radial {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    background-color: var(--rojo-critico);
+    border: 10px solid #ffe4e6;
+    color: white;
+    font-weight: 900;
+    font-size: 1.8rem;
+    cursor: pointer;
+    box-shadow: 0 10px 25px rgba(255, 71, 87, 0.4);
+    z-index: 10;
+    transition: transform 0.1s;
+}
+
+.btn-sos-radial:active { transform: scale(0.95); }
+
+/* 🌊 EFECTO DE ONDA EXPANSIVA SOS */
+.pulse-wave {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    background-color: rgba(255, 71, 87, 0.4);
+    border-radius: 50%;
+    z-index: 1;
+    display: none;
+}
+
+@keyframes expandirOnda {
+    0% { transform: scale(1); opacity: 0.6; }
+    100% { transform: scale(2.2); opacity: 0; }
+}
+
+/* 📱 NAVEGACIÓN INFERIOR NATIVA (BOTTOM NAV) */
+.bottom-nav-movil {
+    background-color: var(--blanco);
+    height: 75px;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid #e2e8f0;
+    padding-bottom: 12px; /* Margen para botón home móvil */
+}
+
+.nav-item-movil {
+    text-decoration: none;
+    color: var(--texto-mutado);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.75rem;
+    font-weight: 700;
+    gap: 4px;
+}
+
+.nav-item-movil.active {
+    color: var(--verde-carabinero);
+}
