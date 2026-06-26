@@ -1,3 +1,13 @@
+# Bloqueo de dependencias de node
 node_modules/
-android/
 package-lock.json
+
+# Filtros para la carpeta Android (Permite subir el proyecto sin binarios)
+android/.gradle/
+android/build/
+android/app/build/
+android/.idea/
+android/local.properties
+android/captures/
+android/*.iml
+android/.DS_Store

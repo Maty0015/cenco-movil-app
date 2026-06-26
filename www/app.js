@@ -1,7 +1,3 @@
-// =========================================================================
-// 🧠 CASCARÓN LÓGICO DE NAVEGACIÓN SPA - CENCO MÓVIL
-// =========================================================================
-
 // 1. Captura de contenedores principales (Vistas)
 const wrapperLoginMovil = document.getElementById('wrapper-login-movil');
 const wrapperPlataformaMovil = document.getElementById('wrapper-plataforma-movil');
