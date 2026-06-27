@@ -4,7 +4,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_qNhIIRqHXtHUa1AysCXgIA_AVf3Bcpe";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 1. Captura de contenedores principales (Vistas)
+// 1. Captura de contenedores principales (Vistass)
 const wrapperLoginMovil = document.getElementById('wrapper-login-movil');
 const wrapperPlataformaMovil = document.getElementById('wrapper-plataforma-movil');
 
