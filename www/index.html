@@ -56,7 +56,7 @@
                 <div class="sos-flex-container">
                     <div class="pulse-wave" id="wave-1"></div>
                     <div class="pulse-wave" id="wave-2"></div>
-                    <button class="btn-sos-radial" id="btn-sos-radial">S.O.S.</button>
+                    <button class="btn-sos-radial" id="btn-sos-radial" style="font-size: 1.4rem;">URGENCIA</button>
                 </div>
             </div>
 
@@ -65,28 +65,43 @@
                 <p style="color: var(--texto-mutado); margin-top: 4px;">Reporte de incidencias y asistencia vía lenguaje de señas (LSCh)</p>
             </div>
 
-            <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none; flex-direction: column; gap: 20px;">
-                <div style="background: white; border-radius: 12px; padding: 20px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
-                        <div style="width: 50px; height: 50px; background: var(--verde-carabinero); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold;">JP</div>
+            <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none; flex-direction: column; gap: 15px;">
+                <!-- Tarjeta del Ciudadano -->
+                <div style="background: white; border-radius: 12px; padding: 15px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div id="perfil-avatar" style="width: 45px; height: 45px; background: var(--verde-carabinero); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold;">--</div>
                         <div>
-                            <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Juan Pérez</h3>
-                            <p style="font-size: 0.85rem; color: var(--texto-mutado); margin: 2px 0 0 0;">RUT: 12.345.678-9</p>
+                            <h3 id="perfil-nombre" style="font-size: 1rem; font-weight: 700; margin: 0;">Cargando...</h3>
+                            <p id="perfil-rut" style="font-size: 0.8rem; color: var(--texto-mutado); margin: 2px 0 0 0;">RUT: --</p>
                         </div>
                     </div>
-                    <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.85rem; display: flex; flex-direction: column; gap: 5px;">
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.8rem; color: var(--texto-oscuro);">
                         <p style="margin: 0;"><strong>Tipo de Cuenta:</strong> Ciudadano (Persona Sorda)</p>
-                        <p style="margin: 0;"><strong>Contacto de Emergencia:</strong> Mamá (Mamá de Juan)</p>
                     </div>
                 </div>
 
-                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 10px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
-                        <h3 style="font-size: 1.1rem; font-weight: 700; margin: 0;">Mis Emergencias S.O.S.</h3>
-                        <button onclick="window.cargarHistorialAlertasCiudadano()" style="background: none; border: none; color: var(--verde-carabinero); cursor: pointer; font-size: 1.1rem; padding: 4px;"><i class="fa-solid fa-rotate-right"></i></button>
+                <!-- Formulario Contacto de Confianza -->
+                <div style="background: white; border-radius: 12px; padding: 15px; border: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 8px;">
+                    <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--verde-carabinero); margin: 0 0 4px 0;">📞 Contacto de Confianza (Red de Apoyo)</h4>
+                    <div class="form-group-movil" style="margin-bottom: 6px; gap: 2px; flex-direction: column; display: flex;">
+                        <label style="font-size: 0.75rem; font-weight: 600;">Nombre del Contacto</label>
+                        <input type="text" id="perfil-contacto-nombre" placeholder="Ej: Mamá" style="padding: 8px 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #cbd5e1; background: white; color: var(--texto-oscuro);">
                     </div>
-                    <div id="historial-sos-lista" style="display: flex; flex-direction: column; gap: 10px; overflow-y: auto; max-height: 250px; padding-bottom: 10px;">
-                        <p style="color: var(--texto-mutado); font-size: 0.9rem; text-align: center; margin-top: 20px;">Cargando historial...</p>
+                    <div class="form-group-movil" style="margin-bottom: 6px; gap: 2px; flex-direction: column; display: flex;">
+                        <label style="font-size: 0.75rem; font-weight: 600;">Correo para Alertas SOS</label>
+                        <input type="email" id="perfil-contacto-correo" placeholder="ejemplo@correo.com" style="padding: 8px 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #cbd5e1; background: white; color: var(--texto-oscuro);">
+                    </div>
+                    <button onclick="window.guardarContactoConfianza(event)" class="btn-submit-institucional" style="padding: 8px; font-size: 0.85rem; border-radius: 6px; margin-top: 4px; width: 100%;">💾 Guardar Contacto</button>
+                </div>
+
+                <!-- Historial de emergencias -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Mis Urgencias</h4>
+                        <button onclick="window.cargarHistorialAlertasCiudadano()" style="background: none; border: none; color: var(--verde-carabinero); cursor: pointer; font-size: 1rem; padding: 2px;"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                    <div id="historial-sos-lista" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 180px; padding-bottom: 5px; width: 100%;">
+                        <p style="color: var(--texto-mutado); font-size: 0.85rem; text-align: center; margin-top: 10px;">Cargando historial...</p>
                     </div>
                 </div>
             </div>
@@ -101,6 +116,7 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>

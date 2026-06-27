@@ -1,8 +1,16 @@
-// --- CONFIGURACIÓN E INICIALIZACIÓN DE SUPABASE ---
+// --- CONFIGURACIÓN DE SUPABASE ---
 const SUPABASE_URL = "https://rcoigjmvmcnfzszssmly.supabase.co";
 const SUPABASE_ANON_KEY = "sb_publishable_xsL00kSs04gdqOnplNUInA_gGOy-MEP";
-
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// --- CONFIGURACIÓN DE EMAILJS (HU-10 Contactos de Confianza) ---
+const EMAILJS_PUBLIC_KEY = "UPBNyLq76tEngPUeW"; 
+const EMAILJS_SERVICE_ID = "service_izwkfux";
+const EMAILJS_TEMPLATE_ID = "template_uv62kpd";
+
+if (EMAILJS_PUBLIC_KEY) {
+    emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
+}
 
 // 1. Captura de contenedores principales (Vistas)
 const wrapperLoginMovil = document.getElementById('wrapper-login-movil');
@@ -28,28 +36,55 @@ const toastWhatsapp = document.getElementById('toast-whatsapp');
 let tiempoPresionado = null;
 const DURACION_PRESION = 3000; // 3000 milisegundos = 3 segundos
 
-// Datos estáticos del ciudadano logueado
-const USUARIO_SESION = {
-    nombre: "Juan Pérez",
-    rut: "12.345.678-9"
-};
+// Datos dinámicos del ciudadano (se cargan al iniciar sesión)
+let USUARIO_SESION = null;
 
 /**
  * 🔐 Función de Control de Acceso Inicial
  */
-window.procesarLoginMovil = function(event) {
+window.procesarLoginMovil = async function(event) {
     event.preventDefault();
 
     const email = document.getElementById('movil-email').value.trim();
     const pass = document.getElementById('movil-pass').value;
 
-    if (email === 'juan.perez@email.com' && pass === 'password123') {
-        wrapperLoginMovil.style.display = "none";
-        wrapperPlataformaMovil.style.display = "flex";
-        window.navegarApp('sos');
-        escucharEstadoAlertasRealtime();
-    } else {
-        alert("🚨 Credenciales incorrectas. Intente usando el usuario de prueba.");
+    const btnSubmit = event.target.querySelector('button');
+    const textoOriginal = btnSubmit.innerText;
+    btnSubmit.innerText = "Verificando...";
+    btnSubmit.disabled = true;
+
+    try {
+        // Consultar el perfil del ciudadano en Supabase
+        const { data: usuario, error } = await supabaseClient
+            .from('perfiles_ciudadanos')
+            .select('*')
+            .eq('correo', email)
+            .single();
+
+        if (error || !usuario) {
+            window.mostrarNotificacionToast("❌", "Error de Acceso", "Usuario no registrado en la base de datos.");
+            btnSubmit.innerText = textoOriginal;
+            btnSubmit.disabled = false;
+            return;
+        }
+
+        // Simulación básica de contraseña
+        if (pass === 'password123') {
+            USUARIO_SESION = usuario; // Asignar la sesión viva
+            
+            wrapperLoginMovil.style.display = "none";
+            wrapperPlataformaMovil.style.display = "flex";
+            window.navegarApp('sos');
+            escucharEstadoAlertasRealtime();
+        } else {
+            window.mostrarNotificacionToast("🔑", "Contraseña Incorrecta", "La contraseña ingresada es inválida.");
+        }
+    } catch (err) {
+        console.error(err);
+        window.mostrarNotificacionToast("🔌", "Error de Red", "No se pudo conectar con el servidor.");
+    } finally {
+        btnSubmit.innerText = textoOriginal;
+        btnSubmit.disabled = false;
     }
 };
 
@@ -91,25 +126,42 @@ window.navegarApp = function(destino) {
  * 📋 Consultar y Renderizar el Historial de Alertas del Ciudadano desde Supabase
  */
 window.cargarHistorialAlertasCiudadano = async function() {
+    // A) Poblar datos del perfil dinámicamente en el DOM
+    if (USUARIO_SESION) {
+        document.getElementById('perfil-nombre').innerText = USUARIO_SESION.nombre_completo;
+        document.getElementById('perfil-rut').innerText = `RUT: ${USUARIO_SESION.rut}`;
+        
+        const partes = USUARIO_SESION.nombre_completo.split(' ');
+        const iniciales = (partes[0] ? partes[0][0] : '') + (partes[1] ? partes[1][0] : '');
+        document.getElementById('perfil-avatar').innerText = iniciales.toUpperCase();
+
+        if (document.getElementById('perfil-contacto-nombre')) {
+            document.getElementById('perfil-contacto-nombre').value = USUARIO_SESION.contacto_nombre || '';
+        }
+        if (document.getElementById('perfil-contacto-correo')) {
+            document.getElementById('perfil-contacto-correo').value = USUARIO_SESION.contacto_correo || '';
+        }
+    }
+
     const contenedor = document.getElementById('historial-sos-lista');
     if (!contenedor) return;
 
-    contenedor.innerHTML = '<p style="color: var(--texto-mutado); font-size: 0.9rem; text-align: center; margin-top: 10px;">Buscando alertas en la central...</p>';
+    contenedor.innerHTML = '<p style="color: var(--texto-mutado); font-size: 0.95rem; text-align: center; margin-top: 10px;">Buscando alertas en la central...</p>';
 
     const { data: alertas, error } = await supabaseClient
         .from('alertas_sos')
         .select('*')
-        .eq('rut_ciudadano', USUARIO_SESION.rut)
+        .eq('rut_ciudadano', USUARIO_SESION ? USUARIO_SESION.rut : '')
         .order('creado_al', { ascending: false });
 
     if (error) {
         console.error("❌ Error al cargar historial:", error.message);
-        contenedor.innerHTML = '<p style="color: #ff4757; font-size: 0.9rem; text-align: center; margin-top: 10px;">Error al cargar historial.</p>';
+        contenedor.innerHTML = '<p style="color: #ff4757; font-size: 0.95rem; text-align: center; margin-top: 10px;">Error al cargar historial.</p>';
         return;
     }
 
     if (!alertas || alertas.length === 0) {
-        contenedor.innerHTML = '<p style="color: var(--texto-mutado); font-size: 0.9rem; text-align: center; margin-top: 20px; font-style: italic;">No has emitido alertas S.O.S. todavía.</p>';
+        contenedor.innerHTML = '<p style="color: var(--texto-mutado); font-size: 0.85rem; text-align: center; margin-top: 10px; font-style: italic;">No has emitido reportes de urgencia todavía.</p>';
         return;
     }
 
@@ -131,19 +183,66 @@ window.cargarHistorialAlertasCiudadano = async function() {
         const fecha = new Date(alert.creado_al).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
 
         return `
-            <div style="background: white; border-radius: 8px; padding: 12px 15px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); text-align: left; width: 100%;">
+            <div style="background: white; border-radius: 8px; padding: 10px 12px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); text-align: left; width: 100%;">
                 <div>
-                    <strong style="font-size: 0.9rem; display: block; color: var(--texto-oscuro); margin: 0;">S.O.S. - ${fecha} hrs</strong>
-                    <span style="font-size: 0.8rem; color: var(--texto-mutado); display: block; margin-top: 3px; word-break: break-all;">📍 ${alert.ubicacion_texto}</span>
+                    <strong style="font-size: 0.85rem; display: block; color: var(--texto-oscuro); margin: 0;">Urgencia - ${fecha} hrs</strong>
+                    <span style="font-size: 0.75rem; color: var(--texto-mutado); display: block; margin-top: 2px; word-break: break-all;">📍 ${alert.ubicacion_texto}</span>
                 </div>
-                <div style="text-align: right; margin-left: 8px;">
-                    <span style="background: ${badgeColor}15; color: ${badgeColor}; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;">
+                <div style="text-align: right; margin-left: 6px;">
+                    <span style="background: ${badgeColor}15; color: ${badgeColor}; font-size: 0.7rem; font-weight: bold; padding: 3px 6px; border-radius: 20px; display: inline-flex; align-items: center; gap: 4px; white-space: nowrap;">
                         <i class="fa-solid ${iconStatus}"></i> ${textEstado}
                     </span>
                 </div>
             </div>
         `;
     }).join('');
+};
+
+/**
+ * 💾 Guardar o Actualizar los datos del Contacto de Confianza en Supabase
+ */
+window.guardarContactoConfianza = async function(event) {
+    event.preventDefault();
+    if (!USUARIO_SESION) return;
+
+    const nombre = document.getElementById('perfil-contacto-nombre').value.trim();
+    const correo = document.getElementById('perfil-contacto-correo').value.trim();
+
+    if (!nombre || !correo) {
+        window.mostrarNotificacionToast("⚠️", "Campos Incompletos", "Completa el nombre y el correo.");
+        return;
+    }
+
+    const btn = event.target;
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "Guardando...";
+
+    try {
+        const { error } = await supabaseClient
+            .from('perfiles_ciudadanos')
+            .update({
+                contacto_nombre: nombre,
+                contacto_correo: correo
+            })
+            .eq('rut', USUARIO_SESION.rut);
+
+        if (error) {
+            console.error("❌ Error al actualizar contacto:", error.message);
+            window.mostrarNotificacionToast("❌", "Error al Guardar", "No se pudieron guardar los datos.");
+        } else {
+            // Actualizar en el modelo local en caliente
+            USUARIO_SESION.contacto_nombre = nombre;
+            USUARIO_SESION.contacto_correo = correo;
+            window.mostrarNotificacionToast("💾", "Contacto Actualizado", "Red de apoyo guardada correctamente.");
+        }
+    } catch (err) {
+        console.error(err);
+        window.mostrarNotificacionToast("🔌", "Error de Red", "Falla de red al intentar guardar.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
 };
 
 /**
@@ -233,6 +332,10 @@ if (btnSosRadial) {
  * 📱 Envío Real de Alerta SOS Inclusiva a Supabase (Dashboard Realtime)
  */
 async function dispararSOSInstitucional() {
+    if (!USUARIO_SESION) {
+        window.mostrarNotificacionToast("⚠️", "Sin Sesión", "Inicia sesión para reportar una emergencia.");
+        return;
+    }
     console.log("🚨 Solicitando coordenadas GPS reales del dispositivo...");
 
     // Función auxiliar corregida para realizar el INSERT mapeando latitud y longitud obligatorias
@@ -241,11 +344,11 @@ async function dispararSOSInstitucional() {
             .from('alertas_sos')
             .insert([
                 {
-                    nombre_ciudadano: USUARIO_SESION.nombre,
+                    nombre_ciudadano: USUARIO_SESION.nombre_completo,
                     rut_ciudadano: USUARIO_SESION.rut,
                     ubicacion_texto: textoDireccion,
-                    latitud: latitudVal,       // ✅ Añadido obligatorio
-                    longitud: longitudVal,     // ✅ Añadido obligatorio
+                    latitud: latitudVal,       
+                    longitud: longitudVal,     
                     estado: "CRÍTICO",
                     categoria_tag: "SOS"
                 }
@@ -257,6 +360,7 @@ async function dispararSOSInstitucional() {
         } else {
             console.log("🚨 S.O.S. Transmitido de forma conforme a la central CENCO mediante la tabla 'alertas_sos'.");
             ejecutarEfectosVisualesExito();
+            notificarContactoConfianzaRealtime(latitudVal, longitudVal); // ✅ Llamar al despachador de correos
         }
     };
 
@@ -291,13 +395,63 @@ function ejecutarEfectosVisualesExito() {
     wave2.style.display = "block";
 
     // Mostrar el toast flotante indicando que el SOS fue enviado
-    window.mostrarNotificacionToast("🚨", "S.O.S. Transmitido", "Alerta enviada correctamente a la central", true);
+    window.mostrarNotificacionToast("🚨", "Urgencia Transmitida", "Alerta enviada correctamente a la central", true);
 
     // Quitar las ondas de radio después de 5 segundos
     setTimeout(() => {
         wave1.style.display = "none";
         wave2.style.display = "none";
     }, 5000);
+}
+
+/**
+ * ✉️ Notificar al contacto de confianza vía EmailJS (o simulación reactiva si no hay llave)
+ */
+async function notificarContactoConfianzaRealtime(latitud, longitud) {
+    if (!USUARIO_SESION || !USUARIO_SESION.contacto_correo) {
+        console.warn("⚠️ No se puede enviar notificación: contacto de confianza sin correo configurado.");
+        return;
+    }
+
+    const nombreContacto = USUARIO_SESION.contacto_nombre;
+    const correoContacto = USUARIO_SESION.contacto_correo;
+    const mapsLink = `https://maps.google.com/?q=${latitud},${longitud}`;
+
+    // Si el usuario configuró su clave pública de EmailJS, disparamos el envío real
+    if (EMAILJS_PUBLIC_KEY) {
+        console.log(`✉️ Enviando correo real de emergencia a ${correoContacto}...`);
+        try {
+            const templateParams = {
+                to_name: nombreContacto,
+                to_email: correoContacto,
+                from_name: USUARIO_SESION.nombre_completo,
+                maps_link: mapsLink,
+                latitud: latitud,
+                longitud: longitud
+            };
+
+            await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams);
+            console.log("✅ Correo de emergencia enviado con éxito vía EmailJS.");
+            
+            // Mostrar confirmación visual al usuario en su celular
+            setTimeout(() => {
+                window.mostrarNotificacionToast("✉️", "Contacto Notificado", `Se envió un email de alerta a ${nombreContacto}.`);
+            }, 3000);
+        } catch (err) {
+            console.error("❌ Error al enviar correo de emergencia con EmailJS:", err);
+            window.mostrarNotificacionToast("⚠️", "Falla de Notificación", "No se pudo despachar el correo de alerta.");
+        }
+    } else {
+        // MODO SIMULACIÓN (Si no han configurado la clave de EmailJS)
+        console.log(`✉️ [SIMULACIÓN NOTIFICACIÓN] Enviando correo de alerta de emergencia...`);
+        console.log(`   Destinatario: ${nombreContacto} (${correoContacto})`);
+        console.log(`   Mensaje: "¡Alerta de Urgencia! ${USUARIO_SESION.nombre_completo} ha reportado una urgencia. Ubicación GPS: ${mapsLink}"`);
+        
+        // Simular latencia de red para que se sienta real
+        setTimeout(() => {
+            window.mostrarNotificacionToast("✉️", "Contacto Notificado", `Simulado: Email de alerta enviado a ${nombreContacto}.`);
+        }, 3000);
+    }
 }
 
 /**
