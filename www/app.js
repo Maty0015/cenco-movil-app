@@ -1,3 +1,9 @@
+// --- CONFIGURACIÓN E INICIALIZACIÓN DE SUPABASE ---
+const SUPABASE_URL = "https://zxeslmngcrqtbolfkbvf.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_5tU3B4kVQOBGy0pkXYhgcQ_iXi21B4O";
+
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
 // 1. Captura de contenedores principales (Vistas)
 const wrapperLoginMovil = document.getElementById('wrapper-login-movil');
 const wrapperPlataformaMovil = document.getElementById('wrapper-plataforma-movil');
@@ -21,6 +27,12 @@ const toastWhatsapp = document.getElementById('toast-whatsapp');
 // Variables para el temporizador de presión prolongada (3 Segundos)
 let tiempoPresionado = null;
 const DURACION_PRESION = 3000; // 3000 milisegundos = 3 segundos
+
+// Datos estáticos del ciudadano logueado
+const USUARIO_SESION = {
+    nombre: "Juan Pérez",
+    rut: "12.345.678-9"
+};
 
 /**
  * 🔐 Función de Control de Acceso Inicial
@@ -123,11 +135,61 @@ if (btnSosRadial) {
 }
 
 /**
- * 📱 Simulación de Envío Exitoso y Mensaje tipo WhatsApp
+ * 📱 Envío Real de Alerta SOS Inclusiva a Supabase (Dashboard Realtime)
  */
-function dispararSOSInstitucional() {
-    console.log("🚨 S.O.S. Transmitido de forma conforme a la central CENCO.");
+async function dispararSOSInstitucional() {
+    console.log("🚨 Solicitando coordenadas GPS reales del dispositivo...");
+    
+    let ubicacionTexto = "Coordenadas no disponibles";
 
+    // Función auxiliar para realizar el INSERT en Supabase
+    const enviarDatosSupabase = async (textoDireccion) => {
+        const { data, error } = await supabaseClient
+            .from('alertas_sos')
+            .insert([
+                {
+                    nombre_ciudadano: USUARIO_SESION.nombre,
+                    rut_ciudadano: USUARIO_SESION.rut,
+                    ubicacion_texto: textoDireccion,
+                    estado: "CRÍTICO",
+                    categoria_tag: "SOS"
+                }
+            ]);
+
+        if (error) {
+            console.error("❌ Error al transmitir a Supabase:", error.message);
+            alert("Error de conexión: No se pudo subir el SOS a la base de datos.");
+        } else {
+            console.log("🚨 S.O.S. Transmitido de forma conforme a la central CENCO mediante la tabla 'alertas_sos'.");
+            ejecutarEfectosVisualesExito();
+        }
+    };
+
+    // Consultar la API del navegador/móvil para geolocalización exacta
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                ubicacionTexto = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                await enviarDatosSupabase(ubicacionTexto);
+            },
+            async (error) => {
+                console.warn("⚠️ Permiso de GPS denegado o falla de señal. Enviando con ubicación por defecto.");
+                ubicacionTexto = "Ubicación Georreferenciada Manual (Concepción Centro)";
+                await enviarDatosSupabase(ubicacionTexto);
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    } else {
+        await enviarDatosSupabase("Dispositivo sin soporte de Geolocalización nativa");
+    }
+}
+
+/**
+ * ✨ Feedback visual tras una subida exitosa
+ */
+function ejecutarEfectosVisualesExito() {
     // Dejar las ondas fijas expandiéndose en señal de enviado permanente
     wave1.style.display = "block";
     wave2.style.display = "block";
