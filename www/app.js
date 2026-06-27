@@ -4,7 +4,7 @@ const SUPABASE_ANON_KEY = "sb_publishable_qNhIIRqHXtHUa1AysCXgIA_AVf3Bcpe";
 
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// 1. Captura de contenedores principales (Vistass)
+// 1. Captura de contenedores principales (Vistas)
 const wrapperLoginMovil = document.getElementById('wrapper-login-movil');
 const wrapperPlataformaMovil = document.getElementById('wrapper-plataforma-movil');
 
@@ -139,11 +139,9 @@ if (btnSosRadial) {
  */
 async function dispararSOSInstitucional() {
     console.log("🚨 Solicitando coordenadas GPS reales del dispositivo...");
-    
-    let ubicacionTexto = "Coordenadas no disponibles";
 
-    // Función auxiliar para realizar el INSERT en Supabase
-    const enviarDatosSupabase = async (textoDireccion) => {
+    // Función auxiliar corregida para realizar el INSERT mapeando latitud y longitud obligatorias
+    const enviarDatosSupabase = async (textoDireccion, latitudVal, longitudVal) => {
         const { data, error } = await supabaseClient
             .from('alertas_sos')
             .insert([
@@ -151,6 +149,8 @@ async function dispararSOSInstitucional() {
                     nombre_ciudadano: USUARIO_SESION.nombre,
                     rut_ciudadano: USUARIO_SESION.rut,
                     ubicacion_texto: textoDireccion,
+                    latitud: latitudVal,       // ✅ Añadido obligatorio
+                    longitud: longitudVal,     // ✅ Añadido obligatorio
                     estado: "CRÍTICO",
                     categoria_tag: "SOS"
                 }
@@ -158,7 +158,7 @@ async function dispararSOSInstitucional() {
 
         if (error) {
             console.error("❌ Error al transmitir a Supabase:", error.message);
-            alert("Error de conexión: No se pudo subir el SOS a la base de datos.");
+            alert("Error de conexión: No se pudo subir el SOS a la base de datos. Detalle: " + error.message);
         } else {
             console.log("🚨 S.O.S. Transmitido de forma conforme a la central CENCO mediante la tabla 'alertas_sos'.");
             ejecutarEfectosVisualesExito();
@@ -171,18 +171,19 @@ async function dispararSOSInstitucional() {
             async (position) => {
                 const lat = position.coords.latitude;
                 const lon = position.coords.longitude;
-                ubicacionTexto = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
-                await enviarDatosSupabase(ubicacionTexto);
+                const ubicacionTexto = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                await enviarDatosSupabase(ubicacionTexto, lat, lon);
             },
             async (error) => {
                 console.warn("⚠️ Permiso de GPS denegado o falla de señal. Enviando con ubicación por defecto.");
-                ubicacionTexto = "Ubicación Georreferenciada Manual (Concepción Centro)";
-                await enviarDatosSupabase(ubicacionTexto);
+                const ubicacionTexto = "Ubicación Georreferenciada Manual (Concepción Centro)";
+                // Se envían coordenadas por defecto reales (-36.8261, -73.0498) para evitar el crash del NOT NULL
+                await enviarDatosSupabase(ubicacionTexto, -36.8261, -73.0498);
             },
             { enableHighAccuracy: true, timeout: 5000 }
         );
     } else {
-        await enviarDatosSupabase("Dispositivo sin soporte de Geolocalización nativa");
+        await enviarDatosSupabase("Dispositivo sin soporte de Geolocalización nativa", -36.8261, -73.0498);
     }
 }
 
