@@ -47,6 +47,7 @@ window.procesarLoginMovil = function(event) {
         wrapperLoginMovil.style.display = "none";
         wrapperPlataformaMovil.style.display = "flex";
         window.navegarApp('sos');
+        escucharEstadoAlertasRealtime();
     } else {
         alert("🚨 Credenciales incorrectas. Intente usando el usuario de prueba.");
     }
@@ -78,12 +79,106 @@ window.navegarApp = function(destino) {
         case 'perfil':
             navPerfil.classList.add('active');
             subviewPerfil.style.display = "flex";
+            window.cargarHistorialAlertasCiudadano();
             break;
             
         default:
             console.error("Ruta no definida en el ecosistema móvil: " + destino);
     }
 };
+
+/**
+ * 📋 Consultar y Renderizar el Historial de Alertas del Ciudadano desde Supabase
+ */
+window.cargarHistorialAlertasCiudadano = async function() {
+    const contenedor = document.getElementById('historial-sos-lista');
+    if (!contenedor) return;
+
+    contenedor.innerHTML = '<p style="color: var(--texto-mutado); font-size: 0.9rem; text-align: center; margin-top: 10px;">Buscando alertas en la central...</p>';
+
+    const { data: alertas, error } = await supabaseClient
+        .from('alertas_sos')
+        .select('*')
+        .eq('rut_ciudadano', USUARIO_SESION.rut)
+        .order('creado_al', { ascending: false });
+
+    if (error) {
+        console.error("❌ Error al cargar historial:", error.message);
+        contenedor.innerHTML = '<p style="color: #ff4757; font-size: 0.9rem; text-align: center; margin-top: 10px;">Error al cargar historial.</p>';
+        return;
+    }
+
+    if (!alertas || alertas.length === 0) {
+        contenedor.innerHTML = '<p style="color: var(--texto-mutado); font-size: 0.9rem; text-align: center; margin-top: 20px; font-style: italic;">No has emitido alertas S.O.S. todavía.</p>';
+        return;
+    }
+
+    contenedor.innerHTML = alertas.map(alert => {
+        let badgeColor = '#ff4757'; // Rojo (Crítico)
+        let textEstado = 'Enviado';
+        let iconStatus = 'fa-circle-exclamation';
+
+        if (alert.estado === 'EN ATENCION') {
+            badgeColor = '#3b82f6'; // Azul
+            textEstado = 'Carabineros en camino';
+            iconStatus = 'fa-truck-medical';
+        } else if (alert.estado === 'RESUELTO') {
+            badgeColor = '#10b981'; // Verde
+            textEstado = 'Resuelto';
+            iconStatus = 'fa-circle-check';
+        }
+
+        const fecha = new Date(alert.creado_al).toLocaleTimeString('es-CL', { hour: '2-digit', minute: '2-digit' });
+
+        return `
+            <div style="background: white; border-radius: 8px; padding: 12px 15px; border: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02); text-align: left; width: 100%;">
+                <div>
+                    <strong style="font-size: 0.9rem; display: block; color: var(--texto-oscuro); margin: 0;">S.O.S. - ${fecha} hrs</strong>
+                    <span style="font-size: 0.8rem; color: var(--texto-mutado); display: block; margin-top: 3px; word-break: break-all;">📍 ${alert.ubicacion_texto}</span>
+                </div>
+                <div style="text-align: right; margin-left: 8px;">
+                    <span style="background: ${badgeColor}15; color: ${badgeColor}; font-size: 0.75rem; font-weight: bold; padding: 4px 8px; border-radius: 20px; display: inline-flex; align-items: center; gap: 5px; white-space: nowrap;">
+                        <i class="fa-solid ${iconStatus}"></i> ${textEstado}
+                    </span>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+/**
+ * 🔊 Escuchar en Tiempo Real si Carabineros cambia el estado de mis emergencias
+ */
+function escucharEstadoAlertasRealtime() {
+    console.log("🟢 Celular escuchando cambios de estado en tiempo real...");
+    
+    supabaseClient
+        .channel('cambios-estado-ciudadano')
+        .on('postgres_changes', { 
+            event: 'UPDATE', 
+            schema: 'public', 
+            table: 'alertas_sos'
+        }, (payload) => {
+            // Verificar si el cambio pertenece al RUT del usuario conectado
+            if (payload.new.rut_ciudadano === USUARIO_SESION.rut) {
+                console.log("🚨 CAMBIO DE ESTADO EN MI ALERTA:", payload.new);
+                
+                // Mostrar notificación tipo push en la parte superior del cel en lugar de alert() molesto
+                if (payload.new.estado === 'EN ATENCION') {
+                    window.mostrarNotificacionToast("🚓", "Carabineros en Camino", "Tu S.O.S. fue recibido y una patrulla se dirige al lugar.");
+                } else if (payload.new.estado === 'RESUELTO') {
+                    window.mostrarNotificacionToast("✅", "Procedimiento Resuelto", "Tu caso de emergencia ha sido cerrado con éxito.");
+                }
+                
+                // Si el ciudadano tiene abierto el perfil, recargar la lista
+                const subviewPerfilActivo = document.getElementById('subview-perfil');
+                if (subviewPerfilActivo && subviewPerfilActivo.style.display === 'flex') {
+                    window.cargarHistorialAlertasCiudadano();
+                }
+            }
+        })
+        .subscribe();
+}
 
 /**
  * 🌊 Lógica del Botón de Pánico: Mantener presionado 3 Segundos
@@ -195,14 +290,41 @@ function ejecutarEfectosVisualesExito() {
     wave1.style.display = "block";
     wave2.style.display = "block";
 
-    // Levantar la alerta flotante estilo WhatsApp
-    toastWhatsapp.classList.add('mostrar');
+    // Mostrar el toast flotante indicando que el SOS fue enviado
+    window.mostrarNotificacionToast("🚨", "S.O.S. Transmitido", "Alerta enviada correctamente a la central", true);
 
-    // Quitar la alerta automáticamente después de 4 segundos
+    // Quitar las ondas de radio después de 5 segundos
     setTimeout(() => {
-        toastWhatsapp.classList.remove('mostrar');
-        // Apagar olas una vez que el mensaje se desvanece por completo
         wave1.style.display = "none";
         wave2.style.display = "none";
-    }, 4000);
+    }, 5000);
 }
+
+/**
+ * 💬 Función genérica para mostrar notificaciones estilo Push / WhatsApp en el dispositivo
+ */
+window.mostrarNotificacionToast = function(icono, titulo, mensaje, mostrarTicks = false) {
+    const toast = document.getElementById('toast-whatsapp');
+    const iconBox = document.getElementById('toast-whatsapp-icon');
+    const titleBox = document.getElementById('toast-whatsapp-title');
+    const bodyBox = document.getElementById('toast-whatsapp-body');
+
+    if (!toast || !iconBox || !titleBox || !bodyBox) return;
+
+    iconBox.innerText = icono;
+    titleBox.innerText = titulo;
+    
+    if (mostrarTicks) {
+        bodyBox.innerHTML = `${mensaje} <span class="whatsapp-ticks">✓✓</span>`;
+    } else {
+        bodyBox.innerHTML = mensaje; // Usar innerHTML para permitir resets
+    }
+
+    // Añade clase para deslizar hacia abajo el banner
+    toast.classList.add('mostrar');
+
+    // Lo oculta a los 5 segundos automáticamente
+    setTimeout(() => {
+        toast.classList.remove('mostrar');
+    }, 5000);
+};
