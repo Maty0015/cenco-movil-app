@@ -187,7 +187,7 @@ body {
     align-items: center;
     gap: 12px;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
-    z-index: 1000;
+    z-index: 3000;
     transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     border-left: 5px solid #25d366; /* Color representativo de WhatsApp */
 }
@@ -253,4 +253,95 @@ body {
 
 .nav-item-movil.active {
     color: var(--verde-carabinero);
+}
+
+/* 🗂️ DRAWER DE DELITOS MENORES */
+.drawer-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(15, 23, 42, 0.5);
+    backdrop-filter: blur(3px);
+    z-index: 2000;
+    display: none;
+    align-items: flex-end;
+    justify-content: center;
+}
+
+.drawer-backdrop.mostrar {
+    display: flex;
+}
+
+.drawer-content {
+    background: white;
+    width: 100%;
+    max-width: 450px;
+    height: 85%;
+    border-radius: 24px 24px 0 0;
+    box-shadow: 0 -10px 25px rgba(0,0,0,0.15);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transform: translateY(100%);
+    transition: transform 0.3s ease-out;
+}
+
+.drawer-backdrop.mostrar .drawer-content {
+    transform: translateY(0);
+}
+
+.drawer-header {
+    padding: 15px 20px;
+    border-bottom: 1px solid #f1f5f9;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: white;
+}
+
+.drawer-body {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding: 15px;
+    background: #f8fafc;
+}
+
+.crime-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+
+.crime-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    padding: 12px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s, background-color 0.2s;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.crime-card:active {
+    border-color: #3b82f6;
+    background-color: #f0f9ff;
+}
+
+.crime-card-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    margin-bottom: 6px;
 }

@@ -12,6 +12,37 @@ if (EMAILJS_PUBLIC_KEY) {
     emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY });
 }
 
+// --- CRIPTOGRAFÍA Y SEGURIDAD DE DATOS (Ley 21.719 / Ley 19.628 Chile) ---
+const SECURE_STORAGE_KEY = "CencoMovilSecretKeyLaw21719";
+
+function guardarSesionEncriptada(usuario) {
+    try {
+        const textoPlano = JSON.stringify(usuario);
+        const encriptado = CryptoJS.AES.encrypt(textoPlano, SECURE_STORAGE_KEY).toString();
+        localStorage.setItem('USUARIO_SESION_SECURE', encriptado);
+    } catch (e) {
+        console.error("Error al encriptar sesión:", e);
+    }
+}
+
+function obtenerSesionEncriptada() {
+    try {
+        const encriptado = localStorage.getItem('USUARIO_SESION_SECURE');
+        if (!encriptado) return null;
+        const bytes = CryptoJS.AES.decrypt(encriptado, SECURE_STORAGE_KEY);
+        const textoPlano = bytes.toString(CryptoJS.enc.Utf8);
+        if (!textoPlano) return null;
+        return JSON.parse(textoPlano);
+    } catch (e) {
+        console.error("Error al desencriptar sesión:", e);
+        return null;
+    }
+}
+
+function eliminarSesionEncriptada() {
+    localStorage.removeItem('USUARIO_SESION_SECURE');
+}
+
 // 1. Captura de contenedores principales (Vistas)
 const wrapperLoginMovil = document.getElementById('wrapper-login-movil');
 const wrapperPlataformaMovil = document.getElementById('wrapper-plataforma-movil');
@@ -71,6 +102,7 @@ window.procesarLoginMovil = async function(event) {
         // Simulación básica de contraseña
         if (pass === 'password123') {
             USUARIO_SESION = usuario; // Asignar la sesión viva
+            guardarSesionEncriptada(usuario); // Guardar de forma encriptada (Ley 21719)
             
             wrapperLoginMovil.style.display = "none";
             wrapperPlataformaMovil.style.display = "flex";
@@ -234,6 +266,7 @@ window.guardarContactoConfianza = async function(event) {
             // Actualizar en el modelo local en caliente
             USUARIO_SESION.contacto_nombre = nombre;
             USUARIO_SESION.contacto_correo = correo;
+            guardarSesionEncriptada(USUARIO_SESION); // ✅ Guardar cambios de forma encriptada (Ley 21719)
             window.mostrarNotificacionToast("💾", "Contacto Actualizado", "Red de apoyo guardada correctamente.");
         }
     } catch (err) {
@@ -482,3 +515,304 @@ window.mostrarNotificacionToast = function(icono, titulo, mensaje, mostrarTicks 
         toast.classList.remove('mostrar');
     }, 5000);
 };
+
+// ==========================================
+// 🗂️ LÓGICA DE REPORTAR DELITOS MENORES (HU-MOCK FIGMA)
+// ==========================================
+
+const CRIMES_LIST = [
+    {
+        id: "robo-sorpresa",
+        title: "Robo por sorpresa (Lanzazo)",
+        icon: "fa-mobile-screen-button",
+        bgColor: "#fee2e2",
+        iconColor: "#ef4444",
+        description: "Sustracción repentina de sus pertenencias (como celular o cartera) sin violencia física directa, aprovechando el descuido.",
+        thumb: "https://images.unsplash.com/photo-1563013544-824ae1d704d3?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "hurto",
+        title: "Hurto (Sin violencia)",
+        icon: "fa-briefcase",
+        bgColor: "#ffedd5",
+        iconColor: "#f97316",
+        description: "Sustracción de bienes sin que usted se dé cuenta en el momento, sin uso de fuerza o intimidación.",
+        thumb: "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "danos",
+        title: "Daños a vehículo/propiedad",
+        icon: "fa-car",
+        bgColor: "#fef3c7",
+        iconColor: "#d97706",
+        description: "Destrucción, rotura o perjuicio causado intencionalmente a su vehículo, casa o pertenencias.",
+        thumb: "https://images.unsplash.com/photo-1619642751034-765dfdf7c58e?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "estafa",
+        title: "Estafa o engaño",
+        icon: "fa-circle-question",
+        bgColor: "#fef9c3",
+        iconColor: "#ca8a04",
+        description: "Engaño para obtener dinero o bienes de su propiedad, ya sea en persona, por internet o por teléfono.",
+        thumb: "https://images.unsplash.com/photo-1563013544-824ae1d704d3?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "perdida",
+        title: "Pérdida de documentos",
+        icon: "fa-file-circle-xmark",
+        bgColor: "#dbeafe",
+        iconColor: "#2563eb",
+        description: "Extravío de cédula de identidad, pasaporte, tarjetas bancarias u otros documentos importantes.",
+        thumb: "https://images.unsplash.com/photo-1450133064473-71024230f91b?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "amenazas",
+        title: "Amenazas",
+        icon: "fa-shield-halved",
+        bgColor: "#f3e8ff",
+        iconColor: "#9333ea",
+        description: "Alguien le ha advertido con causarle daño a usted, a su familia o a sus bienes.",
+        thumb: "https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "alcohol",
+        title: "Consumo alcohol en calle",
+        icon: "fa-beer-mug-empty",
+        bgColor: "#ccfbf1",
+        iconColor: "#0d9488",
+        description: "Personas bebiendo alcohol en la vía pública o espacios no habilitados, generando inseguridad.",
+        thumb: "https://images.unsplash.com/photo-1563013544-824ae1d704d3?w=500&auto=format&fit=crop&q=60"
+    },
+    {
+        id: "comercio",
+        title: "Comercio ilegal",
+        icon: "fa-shop",
+        bgColor: "#e0f7fa",
+        iconColor: "#00acc1",
+        description: "Venta de productos en la calle sin permiso, bloqueando el paso o vendiendo artículos robados.",
+        thumb: "https://images.unsplash.com/photo-1556742049-0cfed4f6a45d?w=500&auto=format&fit=crop&q=60"
+    }
+];
+
+let selectedCrimeObj = null;
+let simulatedVideoFile = null;
+
+window.abrirDrawerDelitoMenor = function() {
+    selectedCrimeObj = null;
+    simulatedVideoFile = null;
+
+    // Reiniciar inputs y estilos de subida
+    document.getElementById('crime-descripcion-texto').value = "";
+    
+    const uploadBtn = document.getElementById('btn-crime-upload-video');
+    uploadBtn.style.border = "2px dashed #cbd5e1";
+    uploadBtn.style.background = "#f8fafc";
+    uploadBtn.style.color = "#64748b";
+    document.getElementById('txt-video-status').innerText = "Subir video explicativo en LSCh";
+
+    // Setear cabecera del drawer
+    document.getElementById('drawer-titulo').innerText = "Seleccionar Delito";
+    document.getElementById('drawer-subtitulo').innerText = "¿Qué tipo de incidente desea reportar?";
+
+    // Intercambiar vistas internas
+    document.getElementById('view-lista-delitos').style.display = "grid";
+    document.getElementById('view-formulario-delito').style.display = "none";
+
+    // Pintar la lista de delitos en el grid
+    const grid = document.getElementById('view-lista-delitos');
+    grid.innerHTML = CRIMES_LIST.map(crime => `
+        <button onclick="window.seleccionarDelito('${crime.id}')" class="crime-card">
+            <div class="crime-card-icon" style="background: ${crime.bgColor}; color: ${crime.iconColor};">
+                <i class="fa-solid ${crime.icon}"></i>
+            </div>
+            <span style="font-size: 0.8rem; font-weight: 700; color: var(--texto-oscuro); height: 32px; display: flex; align-items: center; justify-content: center; line-height: 1.2;">
+                ${crime.title}
+            </span>
+        </button>
+    `).join('');
+
+    // Mostrar el drawer (efectos visuales)
+    document.getElementById('drawer-delitos-menores').classList.add('mostrar');
+};
+
+window.cerrarDrawerDelitoMenor = function() {
+    document.getElementById('drawer-delitos-menores').classList.remove('mostrar');
+};
+
+window.cerrarDrawerDelitoMenorExterno = function(e) {
+    if (e.target.id === 'drawer-delitos-menores') {
+        window.cerrarDrawerDelitoMenor();
+    }
+};
+
+window.seleccionarDelito = function(id) {
+    const crime = CRIMES_LIST.find(c => c.id === id);
+    if (!crime) return;
+
+    selectedCrimeObj = crime;
+
+    // Cambiar títulos
+    document.getElementById('drawer-titulo').innerText = crime.title;
+    document.getElementById('drawer-subtitulo').innerText = "Complete los detalles del reporte";
+
+    // Ocultar lista y mostrar formulario
+    document.getElementById('view-lista-delitos').style.display = "none";
+    document.getElementById('view-formulario-delito').style.display = "flex";
+
+    // Cargar metadatos
+    document.getElementById('crime-video-thumb').src = crime.thumb;
+    document.getElementById('crime-detalles-desc').innerText = crime.description;
+};
+
+window.simularSubidaVideoSeñas = function() {
+    simulatedVideoFile = "video_delito_lsch_" + Date.now() + ".mp4";
+    
+    // Cambiar estilo de la tarjeta de subida
+    const uploadBtn = document.getElementById('btn-crime-upload-video');
+    uploadBtn.style.border = "2px solid #10b981";
+    uploadBtn.style.background = "#f0fdf4";
+    uploadBtn.style.color = "#10b981";
+    document.getElementById('txt-video-status').innerHTML = '<i class="fa-solid fa-circle-check"></i> Video de señas listo (adjunto)';
+
+    window.mostrarNotificacionToast("📹", "Video Adjunto", "Explicación en señas cargada correctamente.");
+};
+
+window.enviarReporteDelitoMenor = async function(e) {
+    e.preventDefault();
+    if (!USUARIO_SESION) return;
+    if (!selectedCrimeObj) return;
+
+    const descripcion = document.getElementById('crime-descripcion-texto').value.trim();
+
+    if (!descripcion && !simulatedVideoFile) {
+        window.mostrarNotificacionToast("⚠️", "Reporte Incompleto", "Escribe una descripción o sube un video.");
+        return;
+    }
+
+    const btn = document.getElementById('btn-enviar-delito');
+    const originalText = btn.innerText;
+    btn.disabled = true;
+    btn.innerText = "Transmitiendo...";
+
+    const enviarDatosDelito = async (textoDireccion, latitudVal, longitudVal) => {
+        const descTexto = descripcion || "(Explicado en video de señas)";
+        const adjuntoVideo = simulatedVideoFile ? " 📹 [Video Adjunto]" : "";
+        
+        // Estructuramos la ubicación y el detalle en la columna de texto para no romper la BD
+        const detalleCompleto = `${textoDireccion} | Delito: ${selectedCrimeObj.title} | Detalle: ${descTexto}${adjuntoVideo}`;
+
+        const { error } = await supabaseClient
+            .from('alertas_sos')
+            .insert([
+                {
+                    nombre_ciudadano: USUARIO_SESION.nombre_completo,
+                    rut_ciudadano: USUARIO_SESION.rut,
+                    ubicacion_texto: detalleCompleto,
+                    latitud: latitudVal,
+                    longitud: longitudVal,
+                    estado: "PENDIENTE", // Comienzan como pendiente
+                    categoria_tag: selectedCrimeObj.id.toUpperCase() // Tag del delito
+                }
+            ]);
+
+        if (error) {
+            console.error("❌ Error al transmitir delito menor:", error.message);
+            window.mostrarNotificacionToast("❌", "Error al transmitir", "No se pudo conectar con la central.");
+        } else {
+            console.log("🚨 Reporte de Delito Menor transmitido con éxito.");
+            window.mostrarNotificacionToast("✅", "Reporte Enviado", "Tu reporte fue recibido en la Central CENCO.");
+            window.cerrarDrawerDelitoMenor();
+
+            // Si está en el perfil, recargar historial
+            const subviewPerfilActivo = document.getElementById('subview-perfil');
+            if (subviewPerfilActivo && subviewPerfilActivo.style.display === 'flex') {
+                window.cargarHistorialAlertasCiudadano();
+            }
+        }
+    };
+
+    // Consultar geolocalización
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            async (position) => {
+                const lat = position.coords.latitude;
+                const lon = position.coords.longitude;
+                const ubicacionTexto = `Lat: ${lat.toFixed(4)}, Lon: ${lon.toFixed(4)}`;
+                await enviarDatosDelito(ubicacionTexto, lat, lon);
+                btn.disabled = false;
+                btn.innerText = originalText;
+            },
+            async (error) => {
+                console.warn("⚠️ Sin GPS para delito menor. Enviando ubicación por defecto.");
+                await enviarDatosDelito("Ubicación Georreferenciada Manual (Concepción Centro)", -36.8261, -73.0498);
+                btn.disabled = false;
+                btn.innerText = originalText;
+            },
+            { enableHighAccuracy: true, timeout: 5000 }
+        );
+    } else {
+        await enviarDatosDelito("Ubicación por defecto (Sin soporte GPS)", -36.8261, -73.0498);
+        btn.disabled = false;
+        btn.innerText = originalText;
+    }
+};
+
+/**
+ * 📹 Procesar archivo de video real seleccionado por el ciudadano
+ */
+window.procesarArchivoVideo = function(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    simulatedVideoFile = file; // Guardar el objeto File real
+
+    // Mostrar tamaño en MB legible
+    const sizeInMb = (file.size / (1024 * 1024)).toFixed(2);
+    
+    const uploadBtn = document.getElementById('btn-crime-upload-video');
+    uploadBtn.style.border = "2px solid #10b981";
+    uploadBtn.style.background = "#f0fdf4";
+    uploadBtn.style.color = "#10b981";
+    document.getElementById('txt-video-status').innerHTML = `<i class="fa-solid fa-circle-check"></i> Archivo: ${file.name.substring(0, 20)}... (${sizeInMb} MB)`;
+
+    window.mostrarNotificacionToast("📹", "Video Adjunto", "El archivo de video está cargado y listo para enviarse.");
+};
+
+/**
+ * 🔑 Cerrar Sesión del Ciudadano
+ */
+window.cerrarSesionMovil = function() {
+    eliminarSesionEncriptada();
+    USUARIO_SESION = null;
+    
+    // Ocultar plataforma y mostrar login
+    wrapperPlataformaMovil.style.display = "none";
+    wrapperLoginMovil.style.display = "flex";
+    
+    // Limpiar inputs
+    document.getElementById('movil-email').value = "";
+    document.getElementById('movil-pass').value = "";
+    
+    window.mostrarNotificacionToast("🔑", "Sesión Cerrada", "Has cerrado tu sesión con éxito.");
+};
+
+// Verificar si hay una sesión guardada en localStorage al cargar la app (Ley 21719 descifrado)
+window.addEventListener('DOMContentLoaded', () => {
+    const usuarioRecuperado = obtenerSesionEncriptada();
+    if (usuarioRecuperado) {
+        try {
+            USUARIO_SESION = usuarioRecuperado;
+            console.log("🔐 Sesión encriptada recuperada y descifrada con éxito:", USUARIO_SESION);
+            
+            // Saltar login e ingresar directo a la sección S.O.S.
+            wrapperLoginMovil.style.display = "none";
+            wrapperPlataformaMovil.style.display = "flex";
+            window.navegarApp('sos');
+            escucharEstadoAlertasRealtime();
+        } catch (e) {
+            console.error("Error al restaurar sesión:", e);
+            eliminarSesionEncriptada();
+        }
+    }
+});
