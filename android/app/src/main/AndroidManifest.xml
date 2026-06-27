@@ -4,6 +4,9 @@
     <!-- 🌐 PERMISOS DE RED E INTERNET (SIEMPRE AL INICIO) -->
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    
+    <!-- 📷 PERMISO NATIVO DE CÁMARA (Ley 21719 - Lenguaje de Señas) -->
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"

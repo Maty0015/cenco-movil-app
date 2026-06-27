@@ -192,17 +192,40 @@
                             <div style="height: 1px; background: #e2e8f0; flex-grow: 1;"></div>
                         </div>
 
-                        <!-- 2. Subir video en señas -->
-                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                        <!-- 2. Grabar video en señas (Alternativa A) -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
                             <label style="font-size: 0.75rem; font-weight: 700; color: var(--texto-oscuro); display: flex; align-items: center; gap: 6px;">
                                 <span style="width: 18px; height: 18px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569;">2</span>
-                                Grabar o subir explicación en señas
+                                Explicación en Lenguaje de Señas (LSCh)
                             </label>
-                            <input type="file" id="crime-video-file-input" accept="video/*" style="display: none;" onchange="window.procesarArchivoVideo(event)">
-                            <button id="btn-crime-upload-video" type="button" onclick="document.getElementById('crime-video-file-input').click()" style="width: 100%; border: 2px dashed #cbd5e1; border-radius: 12px; background: #f8fafc; padding: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">
-                                <i class="fa-solid fa-cloud-arrow-up" style="font-size: 1.4rem; color: #94a3b8;"></i>
-                                <span style="font-size: 0.75rem; color: #64748b; font-weight: 600;" id="txt-video-status">Subir video explicativo en LSCh</span>
+                            
+                            <!-- Contenedores de Video para Grabación Directa -->
+                            <div id="camera-record-container" style="display: none; flex-direction: column; gap: 8px; width: 100%; border-radius: 12px; overflow: hidden; background: #000; position: relative;">
+                                <video id="camera-live-stream" autoplay muted playsinline style="width: 100%; aspect-ratio: 4/3; object-fit: cover; transform: scaleX(-1);"></video>
+                                <video id="camera-playback-preview" controls style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: none;"></video>
+                                
+                                <!-- Indicador de Grabando -->
+                                <div id="recording-badge" style="display: none; position: absolute; top: 10px; left: 10px; background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; align-items: center; gap: 6px; z-index: 10;">
+                                    <span style="width: 8px; height: 8px; background: white; border-radius: 50%;"></span> GRABANDO <span id="recording-timer">0s</span>
+                                </div>
+                            </div>
+
+                            <!-- Botón de Control de la Cámara (Grabar Señas) -->
+                            <button id="btn-camera-toggle" type="button" onclick="window.toggleCameraRecording()" style="width: 100%; border: 1px solid var(--verde-carabinero); border-radius: 10px; background: #f0fdf4; color: var(--verde-carabinero); padding: 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; outline: none; -webkit-tap-highlight-color: transparent;">
+                                <i class="fa-solid fa-camera"></i> <span id="lbl-camera-toggle">Grabar Señas en Vivo</span>
                             </button>
+
+                            <!-- Nota de límite de tiempo (Ley 21719) -->
+                            <div style="font-size: 0.65rem; color: #b45309; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 6px 10px; text-align: center; font-weight: 600; line-height: 1.3; margin: 2px 0;">
+                                ⏱️ Máximo 15 segundos por grabación para garantizar una transmisión rápida de la emergencia.
+                            </div>
+
+                            <!-- Botón de Grabación Secundaria (Sólo visible al activar cámara) -->
+                            <button id="btn-camera-action" type="button" onclick="window.handleCameraAction()" style="display: none; width: 100%; border: none; border-radius: 8px; background: #ef4444; color: white; padding: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; align-items: center; justify-content: center; gap: 6px; outline: none; -webkit-tap-highlight-color: transparent;"></button>
+                        </div>
+
+                        <div style="font-size: 0.75rem; color: var(--texto-mutado); font-weight: 500; text-align: center; margin-top: -5px;" id="txt-video-status">
+                            Ningún video seleccionado o grabado
                         </div>
 
                         <!-- Botón de Envío -->

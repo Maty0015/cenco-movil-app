@@ -602,14 +602,23 @@ window.abrirDrawerDelitoMenor = function() {
     selectedCrimeObj = null;
     simulatedVideoFile = null;
 
-    // Reiniciar inputs y estilos de subida
+    // Apagar cámara si estaba encendida
+    window.detenerStreamingCamara();
+
+    // Reiniciar inputs y estilos
     document.getElementById('crime-descripcion-texto').value = "";
     
-    const uploadBtn = document.getElementById('btn-crime-upload-video');
-    uploadBtn.style.border = "2px dashed #cbd5e1";
-    uploadBtn.style.background = "#f8fafc";
-    uploadBtn.style.color = "#64748b";
-    document.getElementById('txt-video-status').innerText = "Subir video explicativo en LSCh";
+    // Ocultar cámaras y previsualizaciones
+    document.getElementById('camera-record-container').style.display = "none";
+    document.getElementById('camera-live-stream').style.display = "none";
+    document.getElementById('camera-playback-preview').style.display = "none";
+    document.getElementById('btn-camera-action').style.display = "none";
+    document.getElementById('txt-video-status').innerText = "Ningún video seleccionado o grabado";
+
+    const btnToggle = document.getElementById('btn-camera-toggle');
+    btnToggle.style.background = "#f0fdf4";
+    btnToggle.style.color = "var(--verde-carabinero)";
+    document.getElementById('lbl-camera-toggle').innerText = "Grabar Señas en Vivo";
 
     // Setear cabecera del drawer
     document.getElementById('drawer-titulo').innerText = "Seleccionar Delito";
@@ -637,6 +646,7 @@ window.abrirDrawerDelitoMenor = function() {
 };
 
 window.cerrarDrawerDelitoMenor = function() {
+    window.detenerStreamingCamara();
     document.getElementById('drawer-delitos-menores').classList.remove('mostrar');
 };
 
@@ -665,17 +675,209 @@ window.seleccionarDelito = function(id) {
     document.getElementById('crime-detalles-desc').innerText = crime.description;
 };
 
-window.simularSubidaVideoSeñas = function() {
-    simulatedVideoFile = "video_delito_lsch_" + Date.now() + ".mp4";
-    
-    // Cambiar estilo de la tarjeta de subida
-    const uploadBtn = document.getElementById('btn-crime-upload-video');
-    uploadBtn.style.border = "2px solid #10b981";
-    uploadBtn.style.background = "#f0fdf4";
-    uploadBtn.style.color = "#10b981";
-    document.getElementById('txt-video-status').innerHTML = '<i class="fa-solid fa-circle-check"></i> Video de señas listo (adjunto)';
+// --- CONTROLADORES DE GRABACIÓN DE CÁMARA EN VIVO (Alternativa A) ---
+let mediaRecorderInstance = null;
+let recordedChunks = [];
+let cameraStreamInstance = null;
+let recordingTimerInterval = null;
+let recordingSeconds = 0;
+let isRecordingActive = false;
 
-    window.mostrarNotificacionToast("📹", "Video Adjunto", "Explicación en señas cargada correctamente.");
+window.toggleCameraRecording = async function() {
+    const container = document.getElementById('camera-record-container');
+    const liveStream = document.getElementById('camera-live-stream');
+    const playbackPreview = document.getElementById('camera-playback-preview');
+    const btnToggle = document.getElementById('btn-camera-toggle');
+    const lblToggle = document.getElementById('lbl-camera-toggle');
+    const btnAction = document.getElementById('btn-camera-action');
+    const statusTxt = document.getElementById('txt-video-status');
+
+    // Si la cámara ya está activa, la apagamos
+    if (cameraStreamInstance) {
+        window.detenerStreamingCamara();
+        container.style.display = "none";
+        btnAction.style.display = "none";
+        btnToggle.style.background = "#f0fdf4";
+        btnToggle.style.color = "var(--verde-carabinero)";
+        lblToggle.innerText = "Grabar Señas en Vivo";
+        return;
+    }
+
+    // Encender cámara
+    try {
+        console.log("📹 Encendiendo cámara...");
+        // Restricciones de baja resolución y desactivación de audio (ideal para LSCh de bajo peso)
+        const constraints = {
+            video: {
+                width: { ideal: 480 },
+                height: { ideal: 360 },
+                frameRate: { ideal: 15 }
+            },
+            audio: false // Sin audio = pesa 80% menos
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
+        cameraStreamInstance = stream;
+        liveStream.srcObject = stream;
+        liveStream.style.display = "block";
+        playbackPreview.style.display = "none";
+        container.style.display = "flex";
+
+        // Mostrar controles de grabación
+        btnAction.style.display = "flex";
+        btnAction.style.background = "#ef4444";
+        btnAction.innerHTML = '<i class="fa-solid fa-circle"></i> Iniciar Grabación';
+        btnAction.dataset.state = "idle";
+
+        // Estilos del toggle
+        btnToggle.style.background = "#f1f5f9";
+        btnToggle.style.color = "#475569";
+        lblToggle.innerText = "Apagar Cámara";
+
+        statusTxt.innerText = "Cámara lista. Posiciónese frente a la cámara.";
+    } catch (err) {
+        console.error("Error al acceder a la cámara:", err);
+        window.mostrarNotificacionToast("❌", "Permiso de Cámara", "No se pudo acceder a la cámara: " + err.message);
+    }
+};
+
+window.detenerStreamingCamara = function() {
+    if (cameraStreamInstance) {
+        cameraStreamInstance.getTracks().forEach(track => track.stop());
+        cameraStreamInstance = null;
+    }
+    if (recordingTimerInterval) {
+        clearInterval(recordingTimerInterval);
+        recordingTimerInterval = null;
+    }
+    const badge = document.getElementById('recording-badge');
+    if (badge) badge.style.display = "none";
+    isRecordingActive = false;
+};
+
+window.handleCameraAction = function() {
+    const btnAction = document.getElementById('btn-camera-action');
+    const state = btnAction.dataset.state;
+
+    if (state === "idle") {
+        window.iniciarGrabacionSeñas();
+    } else if (state === "recording") {
+        window.detenerGrabacionSeñas();
+    } else if (state === "recorded") {
+        window.resetearGrabacionSeñas();
+    }
+};
+
+window.iniciarGrabacionSeñas = function() {
+    if (!cameraStreamInstance) return;
+
+    recordedChunks = [];
+    isRecordingActive = true;
+    recordingSeconds = 0;
+
+    // Configurar mimeTypes compatibles
+    let options = { mimeType: 'video/webm;codecs=vp8' };
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/webm' };
+    }
+    if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        options = { mimeType: 'video/mp4' };
+    }
+
+    try {
+        mediaRecorderInstance = new MediaRecorder(cameraStreamInstance, options);
+    } catch (e) {
+        console.error("MediaRecorder no soportó formatos específicos, usando por defecto:", e);
+        mediaRecorderInstance = new MediaRecorder(cameraStreamInstance);
+    }
+
+    mediaRecorderInstance.ondataavailable = function(e) {
+        if (e.data && e.data.size > 0) {
+            recordedChunks.push(e.data);
+        }
+    };
+
+    mediaRecorderInstance.onstop = function() {
+        const mimeType = mediaRecorderInstance.mimeType || 'video/webm';
+        const blob = new Blob(recordedChunks, { type: mimeType });
+        
+        // Crear archivo real de bajo peso
+        const extension = mimeType.includes('mp4') ? 'mp4' : 'webm';
+        simulatedVideoFile = new File([blob], `video_delito_${Date.now()}.${extension}`, { type: mimeType });
+
+        const sizeInMb = (simulatedVideoFile.size / (1024 * 1024)).toFixed(2);
+        
+        // Mostrar vista previa grabada
+        const playbackPreview = document.getElementById('camera-playback-preview');
+        const liveStream = document.getElementById('camera-live-stream');
+        
+        liveStream.style.display = "none";
+        playbackPreview.src = URL.createObjectURL(blob);
+        playbackPreview.style.display = "block";
+
+        // Actualizar estados de botones
+        const btnAction = document.getElementById('btn-camera-action');
+        btnAction.dataset.state = "recorded";
+        btnAction.style.background = "#f97316"; // Naranja re-grabar
+        btnAction.innerHTML = '<i class="fa-solid fa-rotate"></i> Volver a Grabar';
+
+        const statusTxt = document.getElementById('txt-video-status');
+        statusTxt.innerHTML = `✓ Señas grabadas con éxito (${sizeInMb} MB)`;
+        window.mostrarNotificacionToast("📹", "Grabación Lista", `Se grabaron ${recordingSeconds} segundos de señas (${sizeInMb} MB).`);
+
+        // Apagar el stream de la cámara (para liberar hardware)
+        if (cameraStreamInstance) {
+            cameraStreamInstance.getTracks().forEach(track => track.stop());
+            cameraStreamInstance = null;
+        }
+    };
+
+    // Comenzar grabación
+    mediaRecorderInstance.start(100); // Guardar datos cada 100ms
+    
+    const btnAction = document.getElementById('btn-camera-action');
+    btnAction.dataset.state = "recording";
+    btnAction.style.background = "#1e293b"; // Gris oscuro
+    btnAction.innerHTML = '<i class="fa-solid fa-square"></i> Detener Grabación';
+
+    // Mostrar temporizador
+    const badge = document.getElementById('recording-badge');
+    const timerText = document.getElementById('recording-timer');
+    badge.style.display = "flex";
+    timerText.innerText = "0s";
+
+    recordingTimerInterval = setInterval(() => {
+        recordingSeconds++;
+        timerText.innerText = `${recordingSeconds}s`;
+
+        // Detener automáticamente a los 15 segundos para evitar archivos pesados
+        if (recordingSeconds >= 15) {
+            window.detenerGrabacionSeñas();
+        }
+    }, 1000);
+};
+
+window.detenerGrabacionSeñas = function() {
+    if (mediaRecorderInstance && mediaRecorderInstance.state !== "inactive") {
+        mediaRecorderInstance.stop();
+    }
+    if (recordingTimerInterval) {
+        clearInterval(recordingTimerInterval);
+        recordingTimerInterval = null;
+    }
+    const badge = document.getElementById('recording-badge');
+    if (badge) badge.style.display = "none";
+    isRecordingActive = false;
+};
+
+window.resetearGrabacionSeñas = async function() {
+    // Limpiar archivo previo
+    simulatedVideoFile = null;
+    document.getElementById('txt-video-status').innerText = "Ningún video seleccionado o grabado";
+    
+    // Volver a activar cámara
+    await window.toggleCameraRecording(); // apaga si estuviera encendido (no lo está)
+    await window.toggleCameraRecording(); // enciende de nuevo
 };
 
 window.enviarReporteDelitoMenor = async function(e) {
@@ -696,11 +898,51 @@ window.enviarReporteDelitoMenor = async function(e) {
     btn.innerText = "Transmitiendo...";
 
     const enviarDatosDelito = async (textoDireccion, latitudVal, longitudVal) => {
+        let urlPublicoVideo = null;
+
+        // Subir el archivo real si existe
+        if (simulatedVideoFile && simulatedVideoFile instanceof File) {
+            console.log("☁️ Subiendo video real a Supabase Storage...", simulatedVideoFile.name);
+            const fileExt = simulatedVideoFile.name.split('.').pop();
+            const fileName = `video_delito_${Date.now()}.${fileExt}`;
+            const filePath = `${USUARIO_SESION.rut}/${fileName}`;
+
+            try {
+                const { data, error: uploadError } = await supabaseClient.storage
+                    .from('videos-delitos')
+                    .upload(filePath, simulatedVideoFile, {
+                        cacheControl: '3600',
+                        upsert: false
+                    });
+
+                if (uploadError) {
+                    console.error("❌ Error de subida a Storage:", uploadError.message);
+                    window.mostrarNotificacionToast("⚠️", "Error de Nube", "Storage: " + uploadError.message);
+                    btn.disabled = false;
+                    btn.innerText = originalText;
+                    return; // Detener flujo para no subir reporte sin el video real
+                } else {
+                    const { data: { publicUrl } } = supabaseClient.storage
+                        .from('videos-delitos')
+                        .getPublicUrl(filePath);
+                    urlPublicoVideo = publicUrl;
+                    console.log("✅ Video subido con éxito a la nube:", urlPublicoVideo);
+                }
+            } catch (err) {
+                console.error("❌ Falla en la subida a Storage:", err);
+                window.mostrarNotificacionToast("❌", "Falla de Conexión", "Falla de red: " + err.message);
+                btn.disabled = false;
+                btn.innerText = originalText;
+                return;
+            }
+        }
+
         const descTexto = descripcion || "(Explicado en video de señas)";
-        const adjuntoVideo = simulatedVideoFile ? " 📹 [Video Adjunto]" : "";
+        const videoInfo = urlPublicoVideo 
+            ? ` 📹 [Video: ${urlPublicoVideo}]` 
+            : (simulatedVideoFile ? ` 📹 [Video Local: ${simulatedVideoFile.name || simulatedVideoFile}]` : "");
         
-        // Estructuramos la ubicación y el detalle en la columna de texto para no romper la BD
-        const detalleCompleto = `${textoDireccion} | Delito: ${selectedCrimeObj.title} | Detalle: ${descTexto}${adjuntoVideo}`;
+        const detalleCompleto = `${textoDireccion} | Delito: ${selectedCrimeObj.title} | Detalle: ${descTexto}${videoInfo}`;
 
         const { error } = await supabaseClient
             .from('alertas_sos')
@@ -711,8 +953,8 @@ window.enviarReporteDelitoMenor = async function(e) {
                     ubicacion_texto: detalleCompleto,
                     latitud: latitudVal,
                     longitud: longitudVal,
-                    estado: "PENDIENTE", // Comienzan como pendiente
-                    categoria_tag: selectedCrimeObj.id.toUpperCase() // Tag del delito
+                    estado: "PENDIENTE",
+                    categoria_tag: selectedCrimeObj.id.toUpperCase()
                 }
             ]);
 
@@ -724,7 +966,6 @@ window.enviarReporteDelitoMenor = async function(e) {
             window.mostrarNotificacionToast("✅", "Reporte Enviado", "Tu reporte fue recibido en la Central CENCO.");
             window.cerrarDrawerDelitoMenor();
 
-            // Si está en el perfil, recargar historial
             const subviewPerfilActivo = document.getElementById('subview-perfil');
             if (subviewPerfilActivo && subviewPerfilActivo.style.display === 'flex') {
                 window.cargarHistorialAlertasCiudadano();
