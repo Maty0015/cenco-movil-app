@@ -1,5 +1,5 @@
 :root {
-    /* Variables institucionales calcadas de tu Dashboard */
+    /* Variables institucionales */
     --verde-carabinero: #004d35;
     --verde-hover: #003625;
     --bg-gris: #f4f6f8;
@@ -14,9 +14,10 @@
     padding: 0;
     box-sizing: border-box;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    user-select: none; /* Previene selección de texto al mantener presionado */
+    -webkit-user-select: none;
 }
 
-/* Fuerza el centrado de la simulación móvil en pantallas de escritorio */
 body {
     background-color: var(--texto-oscuro);
     color: var(--texto-oscuro);
@@ -28,11 +29,10 @@ body {
     overflow: hidden;
 }
 
-/* Contenedor elástico que replica el marco hermético de un celular */
 .app-viewport {
     width: 100vw;
     height: 100vh;
-    max-width: 450px; /* Estándar estricto de UI móvil */
+    max-width: 450px;
     background-color: var(--bg-gris);
     display: flex;
     flex-direction: column;
@@ -41,7 +41,7 @@ body {
     overflow: hidden;
 }
 
-/* 🔐 VISTA 1: INICIAR SESIÓN (FIGMA EXACTO) */
+/* 🔐 LOGIN */
 .login-header-movil {
     background-color: var(--verde-carabinero);
     padding: 40px 20px;
@@ -100,10 +100,9 @@ body {
     font-size: 1rem;
     font-weight: bold;
     cursor: pointer;
-    transition: background 0.2s;
 }
 
-/* 🛡️ ENTORNO INTERNO DEL CIUDADANO (Oculto inicialmente) */
+/* 🛡️ PLATAFORMA INTERNA */
 .main-header-movil {
     background: var(--verde-carabinero);
     color: white;
@@ -112,7 +111,6 @@ body {
     font-weight: 700;
 }
 
-/* Contenedor modular elástico de las sub-vistas */
 .subview-container {
     flex-grow: 1;
     overflow-y: auto;
@@ -121,7 +119,7 @@ body {
     flex-direction: column;
 }
 
-/* 🚨 COMPONENTE DEL BOTÓN SOS RADIAL ELÁSTICO */
+/* 🚨 CONTENEDOR SOS RADIAL */
 .sos-flex-container {
     display: flex;
     flex-direction: column;
@@ -129,7 +127,7 @@ body {
     justify-content: center;
     margin: auto 0;
     position: relative;
-    height: 240px; /* Área de impacto elástico */
+    height: 280px;
 }
 
 .btn-sos-radial {
@@ -144,28 +142,94 @@ body {
     cursor: pointer;
     box-shadow: 0 10px 25px rgba(255, 71, 87, 0.4);
     z-index: 10;
-    transition: transform 0.1s;
+    transition: transform 0.2s, background-color 0.2s;
+    outline: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
-.btn-sos-radial:active { transform: scale(0.95); }
+/* Efecto de compresión visual progresiva mientras se presiona */
+.btn-sos-radial.presionando {
+    transform: scale(0.92);
+    background-color: #e23c4a;
+}
 
-/* 🌊 EFECTO DE ONDA EXPANSIVA SOS */
+/* 🌊 ANIMACIÓN DE ONDAS EN SEÑAL DE ENVIADO */
 .pulse-wave {
     position: absolute;
     width: 180px;
     height: 180px;
-    background-color: rgba(255, 71, 87, 0.4);
+    background-color: rgba(255, 71, 87, 0.35);
     border-radius: 50%;
     z-index: 1;
     display: none;
 }
 
+#wave-1 { animation: expandirOnda 2s infinite linear; }
+#wave-2 { animation: expandirOnda 2s infinite linear; animation-delay: 1s; }
+
 @keyframes expandirOnda {
-    0% { transform: scale(1); opacity: 0.6; }
-    100% { transform: scale(2.2); opacity: 0; }
+    0% { transform: scale(1); opacity: 0.8; }
+    50% { opacity: 0.4; }
+    100% { transform: scale(2.5); opacity: 0; }
 }
 
-/* 📱 NAVEGACIÓN INFERIOR NATIVA (BOTTOM NAV) */
+/* 💬 NOTIFICACIÓN FLOTANTE ESTILO WHATSAPP (PUSH TOAST) */
+.whatsapp-toast-container {
+    position: absolute;
+    top: -80px; /* Escondido arriba inicialmente */
+    left: 15px;
+    right: 15px;
+    background: rgba(255, 255, 255, 0.96);
+    backdrop-filter: blur(8px);
+    border-radius: 13px;
+    padding: 12px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-left: 5px solid #25d366; /* Color representativo de WhatsApp */
+}
+
+/* Clase dinámica inyectada desde JS para desplazar hacia abajo */
+.whatsapp-toast-container.mostrar {
+    transform: translateY(100px); /* Baja limpiamente cubriendo el header */
+}
+
+.whatsapp-icon-box {
+    font-size: 1.6rem;
+}
+
+.whatsapp-text-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.whatsapp-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #111b21;
+}
+
+.whatsapp-body {
+    font-size: 0.85rem;
+    color: #667781;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+/* 🏆 ICONO DE DOBLE CHECK AZUL DE WHATSAPP */
+.whatsapp-ticks {
+    color: #53bdeb; /* Color exacto del doble check azul leído */
+    font-weight: bold;
+    font-size: 1rem;
+    letter-spacing: -2px;
+}
+
+/* 📱 NAV INFERIOR */
 .bottom-nav-movil {
     background-color: var(--blanco);
     height: 75px;
@@ -173,7 +237,7 @@ body {
     justify-content: space-around;
     align-items: center;
     border-top: 1px solid #e2e8f0;
-    padding-bottom: 12px; /* Margen para botón home móvil */
+    padding-bottom: 12px;
 }
 
 .nav-item-movil {

@@ -11,6 +11,14 @@
 
     <div class="app-viewport">
 
+        <div id="toast-whatsapp" class="whatsapp-toast-container">
+            <div class="whatsapp-icon-box">🚓</div>
+            <div class="whatsapp-text-content">
+                <div class="whatsapp-title">CENCO Alerta</div>
+                <div class="whatsapp-body">Mensaje enviado correctamente <span class="whatsapp-ticks">✓✓</span></div>
+            </div>
+        </div>
+
         <div id="wrapper-login-movil" class="app-screen" style="display: flex; flex-direction: column; height: 100%;">
             <div class="login-header-movil">
                 <div class="escudo-circulo">🛡️</div>
@@ -40,31 +48,31 @@
             </header>
 
             <div id="subview-sos" class="subview-container" style="flex-grow: 1; display: flex;">
-                <div style="text-align: center;">
+                <div style="text-align: center; width: 100%;">
                     <h2>Centro de Emergencias</h2>
-                    <p style="color: var(--texto-mutado); margin-top: 4px;">Presione el botón para reportar peligro vital</p>
+                    <p style="color: var(--texto-mutado); margin-top: 6px; font-size: 0.9rem;">Mantenga presionado 3s para reportar peligro vital</p>
                 </div>
 
                 <div class="sos-flex-container">
                     <div class="pulse-wave" id="wave-1"></div>
                     <div class="pulse-wave" id="wave-2"></div>
-                    <button class="btn-sos-radial" onclick="window.dispararSOSInstitucional()">S.O.S.</button>
+                    <button class="btn-sos-radial" id="btn-sos-radial">S.O.S.</button>
                 </div>
             </div>
 
             <div id="subview-video" class="subview-container" style="flex-grow: 1; display: none;">
-                <h2>Videollamada 📹</h2>
-                <p style="color: var(--texto-mutado);">Canal LSCh en tiempo real</p>
+                <h2>Delitos Menores 📹</h2>
+                <p style="color: var(--texto-mutado); margin-top: 4px;">Reporte de incidencias y asistencia vía lenguaje de señas (LSCh)</p>
             </div>
 
             <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none;">
                 <h2>Mi Perfil 👤</h2>
-                <p style="color: var(--texto-mutado);">Datos del ciudadano</p>
+                <p style="color: var(--texto-mutado); margin-top: 4px;">Datos de identificación del ciudadano</p>
             </div>
 
             <nav class="bottom-nav-movil">
                 <a href="#" id="nav-sos" class="nav-item-movil active" onclick="window.navegarApp('sos')"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.4rem;"></i><span>Emergencia</span></a>
-                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-video" style="font-size: 1.4rem;"></i><span>Videollamada</span></a>
+                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-hand-holding-hand" style="font-size: 1.4rem;"></i><span>Delitos Menores</span></a>
                 <a href="#" id="nav-perfil" class="nav-item-movil" onclick="window.navegarApp('perfil')"><i class="fa-solid fa-user" style="font-size: 1.4rem;"></i><span>Mi Perfil</span></a>
             </nav>
         </div>
