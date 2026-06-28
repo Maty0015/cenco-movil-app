@@ -8,6 +8,10 @@
     <!-- 📷 PERMISO NATIVO DE CÁMARA (Ley 21719 - Lenguaje de Señas) -->
     <uses-permission android:name="android.permission.CAMERA" />
 
+    <!-- 📍 PERMISOS NATIVOS DE GPS / UBICACIÓN -->
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+
     <application
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
