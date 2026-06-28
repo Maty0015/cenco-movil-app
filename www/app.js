@@ -297,7 +297,10 @@ function escucharEstadoAlertasRealtime() {
                 
                 // Mostrar notificación tipo push en la parte superior del cel en lugar de alert() molesto
                 if (payload.new.estado === 'EN ATENCION') {
-                    window.mostrarNotificacionToast("🚓", "Carabineros en Camino", "Tu S.O.S. fue recibido y una patrulla se dirige al lugar.");
+                    const mensajePatrulla = payload.new.patrulla_asignada 
+                        ? `La patrulla ${payload.new.patrulla_asignada} va en camino a tu ubicación.`
+                        : "Carabineros va en camino a tu ubicación.";
+                    window.mostrarNotificacionToast("🚓", "Carabineros en Camino", mensajePatrulla);
                 } else if (payload.new.estado === 'RESUELTO') {
                     window.mostrarNotificacionToast("✅", "Procedimiento Resuelto", "Tu caso de emergencia ha sido cerrado con éxito.");
                 }
