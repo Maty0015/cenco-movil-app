@@ -99,8 +99,8 @@ window.procesarLoginMovil = async function(event) {
             return;
         }
 
-        // Simulación básica de contraseña
-        if (pass === 'password123') {
+        // Validación de contraseña dinámica desde Supabase
+        if (pass === (usuario.contrasena || 'password123')) {
             USUARIO_SESION = usuario; // Asignar la sesión viva
             guardarSesionEncriptada(usuario); // Guardar de forma encriptada (Ley 21719)
             
@@ -141,6 +141,7 @@ window.navegarApp = function(destino) {
         case 'video':
             navVideo.classList.add('active');
             subviewVideo.style.display = "flex";
+            window.inicializarChatEmergencia();
             break;
             
         case 'perfil':
@@ -284,6 +285,7 @@ window.guardarContactoConfianza = async function(event) {
 function escucharEstadoAlertasRealtime() {
     console.log("🟢 Celular escuchando cambios de estado en tiempo real...");
     
+    // 1. Escuchar cambios de estado en alertas
     supabaseClient
         .channel('cambios-estado-ciudadano')
         .on('postgres_changes', { 
@@ -295,10 +297,12 @@ function escucharEstadoAlertasRealtime() {
             if (payload.new.rut_ciudadano === USUARIO_SESION.rut) {
                 console.log("🚨 CAMBIO DE ESTADO EN MI ALERTA:", payload.new);
                 
-                // Mostrar notificación tipo push en la parte superior del cel en lugar de alert() molesto
                 if (payload.new.estado === 'EN ATENCION') {
+                    const esPlural = payload.new.patrulla_asignada && payload.new.patrulla_asignada.includes(',');
                     const mensajePatrulla = payload.new.patrulla_asignada 
-                        ? `La patrulla ${payload.new.patrulla_asignada} va en camino a tu ubicación.`
+                        ? (esPlural 
+                            ? `Las unidades ${payload.new.patrulla_asignada} van en camino a tu ubicación.`
+                            : `La patrulla ${payload.new.patrulla_asignada} va en camino a tu ubicación.`)
                         : "Carabineros va en camino a tu ubicación.";
                     window.mostrarNotificacionToast("🚓", "Carabineros en Camino", mensajePatrulla);
                 } else if (payload.new.estado === 'RESUELTO') {
@@ -372,6 +376,7 @@ async function dispararSOSInstitucional() {
         window.mostrarNotificacionToast("⚠️", "Sin Sesión", "Inicia sesión para reportar una emergencia.");
         return;
     }
+
     console.log("🚨 Solicitando coordenadas GPS reales del dispositivo...");
 
     // Función auxiliar corregida para realizar el INSERT mapeando latitud y longitud obligatorias
@@ -388,13 +393,18 @@ async function dispararSOSInstitucional() {
                     estado: "CRÍTICO",
                     categoria_tag: "SOS"
                 }
-            ]);
+            ])
+            .select();
 
         if (error) {
             console.error("❌ Error al transmitir a Supabase:", error.message);
             alert("Error de conexión: No se pudo subir el SOS a la base de datos. Detalle: " + error.message);
         } else {
             console.log("🚨 S.O.S. Transmitido de forma conforme a la central CENCO mediante la tabla 'alertas_sos'.");
+            if (data && data.length > 0) {
+                idAlertaActivaChat = data[0].id;
+                console.log("🟢 ID de Alerta SOS guardado para el Chat:", idAlertaActivaChat);
+            }
             ejecutarEfectosVisualesExito();
             notificarContactoConfianzaRealtime(latitudVal, longitudVal); // ✅ Llamar al despachador de correos
         }
@@ -886,6 +896,8 @@ window.resetearGrabacionSeñas = async function() {
 window.enviarReporteDelitoMenor = async function(e) {
     e.preventDefault();
     if (!USUARIO_SESION) return;
+
+
     if (!selectedCrimeObj) return;
 
     const descripcion = document.getElementById('crime-descripcion-texto').value.trim();
@@ -947,7 +959,7 @@ window.enviarReporteDelitoMenor = async function(e) {
         
         const detalleCompleto = `${textoDireccion} | Delito: ${selectedCrimeObj.title} | Detalle: ${descTexto}${videoInfo}`;
 
-        const { error } = await supabaseClient
+        const { data, error } = await supabaseClient
             .from('alertas_sos')
             .insert([
                 {
@@ -959,13 +971,18 @@ window.enviarReporteDelitoMenor = async function(e) {
                     estado: "PENDIENTE",
                     categoria_tag: selectedCrimeObj.id.toUpperCase()
                 }
-            ]);
+            ])
+            .select();
 
         if (error) {
             console.error("❌ Error al transmitir delito menor:", error.message);
             window.mostrarNotificacionToast("❌", "Error al transmitir", "No se pudo conectar con la central.");
         } else {
             console.log("🚨 Reporte de Delito Menor transmitido con éxito.");
+            if (data && data.length > 0) {
+                idAlertaActivaChat = data[0].id;
+                console.log("🟢 ID de Alerta Delito guardado para el Chat:", idAlertaActivaChat);
+            }
             window.mostrarNotificacionToast("✅", "Reporte Enviado", "Tu reporte fue recibido en la Central CENCO.");
             window.cerrarDrawerDelitoMenor();
 
@@ -1042,12 +1059,11 @@ window.cerrarSesionMovil = function() {
 };
 
 // Verificar si hay una sesión guardada en localStorage al cargar la app (Ley 21719 descifrado)
-window.addEventListener('DOMContentLoaded', () => {
+window.addEventListener('DOMContentLoaded', async () => {
     const usuarioRecuperado = obtenerSesionEncriptada();
     if (usuarioRecuperado) {
         try {
             USUARIO_SESION = usuarioRecuperado;
-            console.log("🔐 Sesión encriptada recuperada y descifrada con éxito:", USUARIO_SESION);
             
             // Saltar login e ingresar directo a la sección S.O.S.
             wrapperLoginMovil.style.display = "none";
@@ -1060,3 +1076,187 @@ window.addEventListener('DOMContentLoaded', () => {
         }
     }
 });
+
+
+
+window.toggleShowPassword = function() {
+    const input = document.getElementById('movil-pass');
+    const icon = document.getElementById('toggle-password-eye');
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    }
+};
+
+/**
+ * 💬 CHAT DE EMERGENCIA ACTIVA EN TIEMPO REAL (REQUERIMIENTO INCLUSIVO)
+ */
+let idAlertaActivaChat = null;
+let chatRealtimeChannel = null;
+
+window.inicializarChatEmergencia = async function() {
+    console.log("💬 Inicializando Chat de Emergencia...");
+    const statusBadge = document.getElementById('chat-status-badge');
+    const inactivoDiv = document.getElementById('chat-estado-inactivo');
+    const activoDiv = document.getElementById('chat-estado-activo');
+
+    if (!USUARIO_SESION) return;
+
+    try {
+        // 1. Verificar si hay alerta activa en curso (CRÍTICO o EN ATENCION)
+        const { data: alertasActivas, error } = await supabaseClient
+            .from('alertas_sos')
+            .select('id, estado')
+            .eq('rut_ciudadano', USUARIO_SESION.rut)
+            .in('estado', ['CRÍTICO', 'EN ATENCION'])
+            .order('creado_al', { ascending: false })
+            .limit(1);
+
+        if (!error && alertasActivas && alertasActivas.length > 0) {
+            const alerta = alertasActivas[0];
+            idAlertaActivaChat = alerta.id;
+            
+            statusBadge.innerText = alerta.estado;
+            statusBadge.style.background = "#fee2e2";
+            statusBadge.style.color = "#ef4444";
+            
+            inactivoDiv.style.display = "none";
+            activoDiv.style.display = "flex";
+            
+            // Cargar historial de mensajes y suscribirse
+            await window.cargarMensajesChat();
+            window.suscribirRealtimeChat();
+        } else {
+            idAlertaActivaChat = null;
+            statusBadge.innerText = "Inactivo";
+            statusBadge.style.background = "#e2e8f0";
+            statusBadge.style.color = "#475569";
+            
+            inactivoDiv.style.display = "flex";
+            activoDiv.style.display = "none";
+            
+            if (chatRealtimeChannel) {
+                chatRealtimeChannel.unsubscribe();
+                chatRealtimeChannel = null;
+            }
+        }
+    } catch (err) {
+        console.error("Error al inicializar el chat:", err);
+    }
+};
+
+window.cargarMensajesChat = async function() {
+    if (!idAlertaActivaChat) return;
+    const historial = document.getElementById('chat-mensajes-historial');
+
+    try {
+        const { data: mensajes, error } = await supabaseClient
+            .from('mensajes_chat')
+            .select('*')
+            .eq('alerta_id', idAlertaActivaChat)
+            .order('creado_al', { ascending: true });
+
+        if (error) throw error;
+
+        historial.innerHTML = "";
+        if (!mensajes || mensajes.length === 0) {
+            historial.innerHTML = `<p style="font-style: italic; color: #94a3b8; text-align: center; margin-top: 20px; font-size: 0.8rem; width: 100%;">No hay mensajes en esta emergencia. Envía una frase rápida para comunicarte con la Central CENCO.</p>`;
+        } else {
+            mensajes.forEach(msg => {
+                window.agregarMensajeBurbujaHTML(msg.remitente, msg.mensaje);
+            });
+        }
+        historial.scrollTop = historial.scrollHeight;
+    } catch (err) {
+        console.error("Error al cargar mensajes:", err);
+        historial.innerHTML = `<p style="color: #ef4444; text-align: center; font-size: 0.8rem; width: 100%;">Error al conectar con el servidor de chat.</p>`;
+    }
+};
+
+window.agregarMensajeBurbujaHTML = function(remitente, texto) {
+    const historial = document.getElementById('chat-mensajes-historial');
+    if (!historial) return;
+
+    // Limpiar mensaje placeholder
+    if (historial.innerText.includes("No hay mensajes en esta emergencia") || historial.innerText.includes("Error al conectar")) {
+        historial.innerHTML = "";
+    }
+
+    const container = document.createElement('div');
+    container.style.width = "100%";
+    container.style.display = "flex";
+    container.style.justifyContent = (remitente === 'ciudadano') ? "flex-end" : "flex-start";
+    container.style.margin = "4px 0";
+
+    const bubble = document.createElement('div');
+    bubble.style.maxWidth = "75%";
+    bubble.style.borderRadius = "12px";
+    bubble.style.padding = "8px 12px";
+    bubble.style.fontSize = "0.8rem";
+    bubble.style.lineHeight = "1.4";
+    bubble.style.wordBreak = "break-word";
+    
+    if (remitente === 'ciudadano') {
+        bubble.style.background = "var(--verde-carabinero)";
+        bubble.style.color = "white";
+        bubble.style.borderBottomRightRadius = "2px";
+    } else {
+        bubble.style.background = "#e2e8f0";
+        bubble.style.color = "var(--texto-oscuro)";
+        bubble.style.borderBottomLeftRadius = "2px";
+    }
+    
+    bubble.innerText = texto;
+    container.appendChild(bubble);
+    historial.appendChild(container);
+    historial.scrollTop = historial.scrollHeight;
+};
+
+window.suscribirRealtimeChat = function() {
+    if (!idAlertaActivaChat) return;
+    if (chatRealtimeChannel) {
+        chatRealtimeChannel.unsubscribe();
+    }
+
+    console.log(`🟢 Suscribiendo a Supabase Realtime para chat de alerta ${idAlertaActivaChat}`);
+    chatRealtimeChannel = supabaseClient
+        .channel(`chat_${idAlertaActivaChat}`)
+        .on('postgres_changes', {
+            event: 'INSERT',
+            schema: 'public',
+            table: 'mensajes_chat',
+            filter: `alerta_id=eq.${idAlertaActivaChat}`
+        }, (payload) => {
+            console.log("💬 NUEVO MENSAJE CHAT REALTIME:", payload.new);
+            window.agregarMensajeBurbujaHTML(payload.new.remitente, payload.new.mensaje);
+        })
+        .subscribe();
+};
+
+window.enviarFraseRapidaChat = async function(frase) {
+    if (!idAlertaActivaChat || !USUARIO_SESION) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('mensajes_chat')
+            .insert([
+                {
+                    alerta_id: idAlertaActivaChat,
+                    rut_ciudadano: USUARIO_SESION.rut,
+                    remitente: 'ciudadano',
+                    mensaje: frase
+                }
+            ]);
+
+        if (error) throw error;
+        console.log("✅ Frase rápida enviada con éxito:", frase);
+    } catch (err) {
+        console.error("Error al enviar mensaje:", err);
+        window.mostrarNotificacionToast("⚠️", "Error de Envío", "No se pudo enviar el mensaje a la central.");
+    }
+};

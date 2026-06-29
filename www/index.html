@@ -33,7 +33,10 @@
                     </div>
                     <div class="form-group-movil">
                         <label>Contraseña</label>
-                        <input type="password" id="movil-pass" value="password123" required>
+                        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="movil-pass" value="password123" required style="padding-right: 45px; width: 100%; box-sizing: border-box;">
+                            <i id="toggle-password-eye" class="fa-solid fa-eye-slash" style="position: absolute; right: 15px; color: var(--texto-mutado); cursor: pointer; font-size: 1.1rem; padding: 5px; z-index: 10;" onclick="window.toggleShowPassword()"></i>
+                        </div>
                     </div>
                     <button type="submit" class="btn-submit-institucional" style="margin-top: 10px;">➔ Ingresar al Sistema</button>
                 </form>
@@ -77,9 +80,38 @@
                 </div>
             </div>
 
-            <div id="subview-video" class="subview-container" style="flex-grow: 1; display: none;">
-                <h2>Delitos Menores 📹</h2>
-                <p style="color: var(--texto-mutado); margin-top: 4px;">Reporte de incidencias y asistencia vía lenguaje de señas (LSCh)</p>
+            <div id="subview-video" class="subview-container" style="flex-grow: 1; display: none; flex-direction: column; height: calc(100% - 130px); padding: 15px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+                    <h2 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--verde-carabinero);">Chat CENCO 👮💬</h2>
+                    <span id="chat-status-badge" style="font-size: 0.7rem; font-weight: bold; background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 20px; text-transform: uppercase;">Inactivo</span>
+                </div>
+
+                <!-- 1. Pantalla de estado inactivo (cuando no hay alerta en curso) -->
+                <div id="chat-estado-inactivo" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-align: center; gap: 12px; color: var(--texto-mutado);">
+                    <div style="font-size: 3.5rem;">💬</div>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: bold; color: var(--texto-oscuro);">Sin Emergencia Activa</h3>
+                    <p style="margin: 0; font-size: 0.8rem; line-height: 1.5; max-width: 250px;">El canal de comunicación directa por chat con la central se habilitará una vez que inicies un S.O.S.</p>
+                </div>
+
+                <!-- 2. Contenedor de chat activo (cuando hay alerta en curso) -->
+                <div id="chat-estado-activo" style="display: none; flex-direction: column; flex-grow: 1; overflow: hidden; height: 100%;">
+                    <!-- Área de mensajes -->
+                    <div id="chat-mensajes-historial" style="flex-grow: 1; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                        <!-- Burbujas del chat dinámicas -->
+                    </div>
+
+                    <!-- Panel de frases rápidas inclusivas -->
+                    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase;">Selecciona un mensaje rápido:</span>
+                        <div id="chat-frases-rapidas-contenedor" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚨 Agresor cerca / Peligro inminente')" style="white-space: nowrap; flex-shrink: 0; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚨 Agresor cerca</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚓 Vengan lo más rápido posible')" style="white-space: nowrap; flex-shrink: 0; background: #dbeafe; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚓 Vengan rápido</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('😨 Estoy asustado / Resguardado')" style="white-space: nowrap; flex-shrink: 0; background: #fef3c7; border: 1px solid #fde68a; color: #b45309; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">😨 Estoy resguardado</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚶 El sospechoso se retiró')" style="white-space: nowrap; flex-shrink: 0; background: #e2e8f0; border: 1px solid #cbd5e1; color: #475569; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚶 Sospechoso se fue</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚑 Se necesita ambulancia de urgencia')" style="white-space: nowrap; flex-shrink: 0; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚑 Requiere ambulancia</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none; flex-direction: column; gap: 15px;">
@@ -129,7 +161,7 @@
 
             <nav class="bottom-nav-movil">
                 <a href="#" id="nav-sos" class="nav-item-movil active" onclick="window.navegarApp('sos')"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.4rem;"></i><span>Emergencia</span></a>
-                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-hand-holding-hand" style="font-size: 1.4rem;"></i><span>Delitos Menores</span></a>
+                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-comments" style="font-size: 1.4rem;"></i><span>Chat CENCO</span></a>
                 <a href="#" id="nav-perfil" class="nav-item-movil" onclick="window.navegarApp('perfil')"><i class="fa-solid fa-user" style="font-size: 1.4rem;"></i><span>Mi Perfil</span></a>
             </nav>
         </div>
