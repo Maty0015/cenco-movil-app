@@ -108,6 +108,7 @@ window.procesarLoginMovil = async function(event) {
             wrapperPlataformaMovil.style.display = "flex";
             window.navegarApp('sos');
             escucharEstadoAlertasRealtime();
+            window.actualizarEstadoBloqueoBotonSOS();
         } else {
             window.mostrarNotificacionToast("🔑", "Contraseña Incorrecta", "La contraseña ingresada es inválida.");
         }
@@ -136,6 +137,7 @@ window.navegarApp = function(destino) {
         case 'sos':
             navSos.classList.add('active');
             subviewSos.style.display = "flex";
+            window.actualizarEstadoBloqueoBotonSOS();
             break;
             
         case 'video':
@@ -317,6 +319,36 @@ function escucharEstadoAlertasRealtime() {
             }
         })
         .subscribe();
+
+    // 2. Escuchar cambios en el perfil del ciudadano para bloqueo anti-pitanza
+    if (USUARIO_SESION) {
+        supabaseClient
+            .channel('perfil-ciudadano-realtime')
+            .on('postgres_changes', {
+                event: 'UPDATE',
+                schema: 'public',
+                table: 'perfiles_ciudadanos'
+            }, (payload) => {
+                if (payload.new && payload.new.rut === USUARIO_SESION.rut) {
+                    console.log("👤 MI PERFIL ACTUALIZADO:", payload.new);
+                    USUARIO_SESION.es_bloqueado = payload.new.es_bloqueado;
+                    
+                    const btnSos = document.getElementById('btn-sos-radial');
+                    if (btnSos) {
+                        if (payload.new.es_bloqueado) {
+                            btnSos.disabled = true;
+                            btnSos.innerText = "BLOQUEADO";
+                            window.mostrarNotificacionToast("🚫", "Cuenta Bloqueada", "Tu cuenta ha sido bloqueada temporalmente por llamadas de broma.");
+                        } else {
+                            btnSos.disabled = false;
+                            btnSos.innerText = "URGENCIA";
+                            window.mostrarNotificacionToast("✅", "Cuenta Reactivada", "Tu cuenta ha sido rehabilitada por la central.");
+                        }
+                    }
+                }
+            })
+            .subscribe();
+    }
 }
 
 /**
@@ -374,6 +406,11 @@ if (btnSosRadial) {
 async function dispararSOSInstitucional() {
     if (!USUARIO_SESION) {
         window.mostrarNotificacionToast("⚠️", "Sin Sesión", "Inicia sesión para reportar una emergencia.");
+        return;
+    }
+
+    if (USUARIO_SESION.es_bloqueado) {
+        window.mostrarNotificacionToast("🚫", "Cuenta Bloqueada", "Tu cuenta está inhabilitada para emitir alertas.");
         return;
     }
 
@@ -1070,6 +1107,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             wrapperPlataformaMovil.style.display = "flex";
             window.navegarApp('sos');
             escucharEstadoAlertasRealtime();
+            window.actualizarEstadoBloqueoBotonSOS();
         } catch (e) {
             console.error("Error al restaurar sesión:", e);
             eliminarSesionEncriptada();
@@ -1258,5 +1296,38 @@ window.enviarFraseRapidaChat = async function(frase) {
     } catch (err) {
         console.error("Error al enviar mensaje:", err);
         window.mostrarNotificacionToast("⚠️", "Error de Envío", "No se pudo enviar el mensaje a la central.");
+    }
+};
+
+/**
+ * 🔒 Verificar dinámicamente si el usuario está bloqueado por pitanza
+ */
+window.actualizarEstadoBloqueoBotonSOS = async function() {
+    if (!USUARIO_SESION) return;
+
+    try {
+        const { data: usuario, error } = await supabaseClient
+            .from('perfiles_ciudadanos')
+            .select('es_bloqueado')
+            .eq('rut', USUARIO_SESION.rut)
+            .single();
+
+        if (error || !usuario) return;
+
+        // Actualizar la sesión local
+        USUARIO_SESION.es_bloqueado = usuario.es_bloqueado;
+
+        const btnSos = document.getElementById('btn-sos-radial');
+        if (btnSos) {
+            if (usuario.es_bloqueado) {
+                btnSos.disabled = true;
+                btnSos.innerText = "BLOQUEADO";
+            } else {
+                btnSos.disabled = false;
+                btnSos.innerText = "URGENCIA";
+            }
+        }
+    } catch (e) {
+        console.error("Error al verificar estado de bloqueo:", e);
     }
 };
