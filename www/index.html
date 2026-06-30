@@ -271,6 +271,106 @@
         </div>
     </div>
 
+    <!-- 🗂️ DRAWER DE REPORTAR DELITOS MENORES (MOCK FIGMA COPIED) -->
+    <div id="drawer-delitos-menores" class="drawer-backdrop" onclick="window.cerrarDrawerDelitoMenorExterno(event)">
+        <div class="drawer-content">
+            <!-- HEADER -->
+            <div class="drawer-header">
+                <div style="text-align: left;">
+                    <h3 id="drawer-titulo" style="font-size: 1.1rem; font-weight: bold; margin: 0; color: var(--texto-oscuro);">Seleccionar Delito</h3>
+                    <p id="drawer-subtitulo" style="font-size: 0.75rem; color: var(--texto-mutado); margin: 2px 0 0 0;">¿Qué tipo de incidente desea reportar?</p>
+                </div>
+                <button onclick="window.cerrarDrawerDelitoMenor()" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--texto-mutado); font-weight: bold; font-size: 0.95rem;">✕</button>
+            </div>
+
+            <!-- BODY -->
+            <div class="drawer-body" id="drawer-cuerpo-dinamico">
+                <!-- VISTA 1: Lista de Delitos (Cargada dinámicamente) -->
+                <div id="view-lista-delitos" class="crime-grid">
+                    <!-- Cards will be drawn dynamically via JS -->
+                </div>
+                
+                <!-- VISTA 2: Formulario del Delito (Oculta por defecto) -->
+                <div id="view-formulario-delito" style="display: none; flex-direction: column; gap: 15px;">
+                    <!-- Video explicativo LSCh simulado -->
+                    <div style="width: 100%; border-radius: 12px; overflow: hidden; background: #1a1f36; aspect-ratio: 16/9; position: relative;">
+                        <!-- Imagen representativa de lenguaje de señas -->
+                        <img id="crime-video-thumb" src="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.55;" alt="Señas explicativas">
+                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 48px; height: 48px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2);"><i class="fa-solid fa-play" style="margin-left: 3px;"></i></div>
+                        </div>
+                        <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); border-radius: 20px; padding: 4px 10px; display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: white;">
+                            <i class="fa-solid fa-closed-captioning" style="color: #93c5fd;"></i> Explicación en LSCh
+                        </div>
+                    </div>
+
+                    <!-- Descripción del delito -->
+                    <div style="background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 12px; font-size: 0.8rem; color: #1e40af; line-height: 1.4; text-align: center;" id="crime-detalles-desc">
+                        Sustracción repentina de sus pertenencias...
+                    </div>
+
+                    <!-- Inputs del reporte -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- 1. Descripción textual -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--texto-oscuro); display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 18px; height: 18px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569;">1</span>
+                                Describa lo sucedido (Texto)
+                            </label>
+                            <textarea id="crime-descripcion-texto" placeholder="Escriba aquí los detalles de lo ocurrido..." style="width: 100%; height: 75px; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem; resize: none; background: white; color: var(--texto-oscuro);"></textarea>
+                        </div>
+
+                        <!-- Separador -->
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 5px 0;">
+                            <div style="height: 1px; background: #e2e8f0; flex-grow: 1;"></div>
+                            <span style="font-size: 0.65rem; color: var(--texto-mutado); font-weight: 700; text-transform: uppercase;">O si prefiere</span>
+                            <div style="height: 1px; background: #e2e8f0; flex-grow: 1;"></div>
+                        </div>
+
+                        <!-- 2. Grabar video en señas (Alternativa A) -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--texto-oscuro); display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 18px; height: 18px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569;">2</span>
+                                Explicación en Lenguaje de Señas (LSCh)
+                            </label>
+                            
+                            <!-- Contenedores de Video para Grabación Directa -->
+                            <div id="camera-record-container" style="display: none; flex-direction: column; gap: 8px; width: 100%; border-radius: 12px; overflow: hidden; background: #000; position: relative;">
+                                <video id="camera-live-stream" autoplay muted playsinline style="width: 100%; aspect-ratio: 4/3; object-fit: cover; transform: scaleX(-1);"></video>
+                                <video id="camera-playback-preview" controls style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: none;"></video>
+                                
+                                <!-- Indicador de Grabando -->
+                                <div id="recording-badge" style="display: none; position: absolute; top: 10px; left: 10px; background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; align-items: center; gap: 6px; z-index: 10;">
+                                    <span style="width: 8px; height: 8px; background: white; border-radius: 50%;"></span> GRABANDO <span id="recording-timer">0s</span>
+                                </div>
+                            </div>
+
+                            <!-- Botón de Control de la Cámara (Grabar Señas) -->
+                            <button id="btn-camera-toggle" type="button" onclick="window.toggleCameraRecording()" style="width: 100%; border: 1px solid var(--verde-carabinero); border-radius: 10px; background: #f0fdf4; color: var(--verde-carabinero); padding: 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; outline: none; -webkit-tap-highlight-color: transparent;">
+                                <i class="fa-solid fa-camera"></i> <span id="lbl-camera-toggle">Grabar Señas en Vivo</span>
+                            </button>
+
+                            <!-- Nota de límite de tiempo (Ley 21719) -->
+                            <div style="font-size: 0.65rem; color: #b45309; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 6px 10px; text-align: center; font-weight: 600; line-height: 1.3; margin: 2px 0;">
+                                ⏱️ Máximo 15 segundos por grabación para garantizar una transmisión rápida de la emergencia.
+                            </div>
+
+                            <!-- Botón de Grabación Secundaria (Sólo visible al activar cámara) -->
+                            <button id="btn-camera-action" type="button" onclick="window.handleCameraAction()" style="display: none; width: 100%; border: none; border-radius: 8px; background: #ef4444; color: white; padding: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; align-items: center; justify-content: center; gap: 6px; outline: none; -webkit-tap-highlight-color: transparent;"></button>
+                        </div>
+
+                        <div style="font-size: 0.75rem; color: var(--texto-mutado); font-weight: 500; text-align: center; margin-top: -5px;" id="txt-video-status">
+                            Ningún video seleccionado o grabado
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <button id="btn-enviar-delito" onclick="window.enviarReporteDelitoMenor(event)" class="btn-submit-institucional" style="padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; margin-top: 10px; width: 100%;">Enviar Reporte</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
