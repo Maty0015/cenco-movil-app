@@ -12,10 +12,10 @@
     <div class="app-viewport">
 
         <div id="toast-whatsapp" class="whatsapp-toast-container">
-            <div class="whatsapp-icon-box">🚓</div>
+            <div class="whatsapp-icon-box" id="toast-whatsapp-icon">🚓</div>
             <div class="whatsapp-text-content">
-                <div class="whatsapp-title">CENCO Alerta</div>
-                <div class="whatsapp-body">Mensaje enviado correctamente <span class="whatsapp-ticks">✓✓</span></div>
+                <div class="whatsapp-title" id="toast-whatsapp-title">CENCO Alerta</div>
+                <div class="whatsapp-body" id="toast-whatsapp-body">Mensaje enviado correctamente <span class="whatsapp-ticks" id="toast-whatsapp-ticks">✓✓</span></div>
             </div>
         </div>
 
@@ -33,7 +33,10 @@
                     </div>
                     <div class="form-group-movil">
                         <label>Contraseña</label>
-                        <input type="password" id="movil-pass" value="password123" required>
+                        <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                            <input type="password" id="movil-pass" value="password123" required style="padding-right: 45px; width: 100%; box-sizing: border-box;">
+                            <i id="toggle-password-eye" class="fa-solid fa-eye-slash" style="position: absolute; right: 15px; color: var(--texto-mutado); cursor: pointer; font-size: 1.1rem; padding: 5px; z-index: 10;" onclick="window.toggleShowPassword()"></i>
+                        </div>
                     </div>
                     <button type="submit" class="btn-submit-institucional" style="margin-top: 10px;">➔ Ingresar al Sistema</button>
                 </form>
@@ -56,30 +59,221 @@
                 <div class="sos-flex-container">
                     <div class="pulse-wave" id="wave-1"></div>
                     <div class="pulse-wave" id="wave-2"></div>
-                    <button class="btn-sos-radial" id="btn-sos-radial">S.O.S.</button>
+                    <button class="btn-sos-radial" id="btn-sos-radial" style="font-size: 1.4rem;">URGENCIA</button>
+                </div>
+
+                <!-- Botón de Delitos Menores -->
+                <div style="width: 100%; display: flex; flex-direction: column; gap: 5px; margin-top: 15px; flex-shrink: 0;">
+                    <div style="height: 1px; background: #e2e8f0; width: 100%; margin: 5px 0;"></div>
+                    <button onclick="window.abrirDrawerDelitoMenor()" style="background: white; border: 1px solid #cbd5e1; border-radius: 16px; padding: 12px 15px; display: flex; align-items: center; justify-content: space-between; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.02); transition: background-color 0.2s; outline: none; width: 100%; -webkit-tap-highlight-color: transparent;">
+                        <div style="display: flex; align-items: center; gap: 12px; text-align: left;">
+                            <div style="width: 40px; height: 40px; background: #fff7ed; color: #f97316; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.2rem;">
+                                <i class="fa-solid fa-triangle-exclamation"></i>
+                            </div>
+                            <div>
+                                <h4 style="margin: 0; font-size: 0.9rem; font-weight: 700; color: var(--texto-oscuro);">Reportar Delito Menor</h4>
+                                <p style="margin: 2px 0 0 0; font-size: 0.75rem; color: var(--texto-mutado);">Robos, daños, extravíos. Sin riesgo vital.</p>
+                            </div>
+                        </div>
+                        <span style="color: #cbd5e1; font-size: 0.9rem;"><i class="fa-solid fa-chevron-right"></i></span>
+                    </button>
                 </div>
             </div>
 
-            <div id="subview-video" class="subview-container" style="flex-grow: 1; display: none;">
-                <h2>Delitos Menores 📹</h2>
-                <p style="color: var(--texto-mutado); margin-top: 4px;">Reporte de incidencias y asistencia vía lenguaje de señas (LSCh)</p>
+            <div id="subview-video" class="subview-container" style="flex-grow: 1; display: none; flex-direction: column; height: calc(100% - 130px); padding: 15px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; margin-bottom: 10px; flex-shrink: 0;">
+                    <h2 style="margin: 0; font-size: 1.2rem; font-weight: 700; color: var(--verde-carabinero);">Chat CENCO 👮💬</h2>
+                    <span id="chat-status-badge" style="font-size: 0.7rem; font-weight: bold; background: #e2e8f0; color: #475569; padding: 3px 8px; border-radius: 20px; text-transform: uppercase;">Inactivo</span>
+                </div>
+
+                <!-- 1. Pantalla de estado inactivo (cuando no hay alerta en curso) -->
+                <div id="chat-estado-inactivo" style="display: flex; flex-direction: column; align-items: center; justify-content: center; flex-grow: 1; text-align: center; gap: 12px; color: var(--texto-mutado);">
+                    <div style="font-size: 3.5rem;">💬</div>
+                    <h3 style="margin: 0; font-size: 1rem; font-weight: bold; color: var(--texto-oscuro);">Sin Emergencia Activa</h3>
+                    <p style="margin: 0; font-size: 0.8rem; line-height: 1.5; max-width: 250px;">El canal de comunicación directa por chat con la central se habilitará una vez que inicies un S.O.S.</p>
+                </div>
+
+                <!-- 2. Contenedor de chat activo (cuando hay alerta en curso) -->
+                <div id="chat-estado-activo" style="display: none; flex-direction: column; flex-grow: 1; overflow: hidden; height: 100%;">
+                    <!-- Área de mensajes -->
+                    <div id="chat-mensajes-historial" style="flex-grow: 1; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px; display: flex; flex-direction: column; gap: 10px; margin-bottom: 10px;">
+                        <!-- Burbujas del chat dinámicas -->
+                    </div>
+
+                    <!-- Panel de frases rápidas inclusivas -->
+                    <div style="flex-shrink: 0; display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px;">
+                        <span style="font-size: 0.7rem; font-weight: 700; color: var(--texto-mutado); text-transform: uppercase;">Selecciona un mensaje rápido:</span>
+                        <div id="chat-frases-rapidas-contenedor" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 6px; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚨 Agresor cerca / Peligro inminente')" style="white-space: nowrap; flex-shrink: 0; background: #fee2e2; border: 1px solid #fecaca; color: #b91c1c; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚨 Agresor cerca</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚓 Vengan lo más rápido posible')" style="white-space: nowrap; flex-shrink: 0; background: #dbeafe; border: 1px solid #bfdbfe; color: #1d4ed8; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚓 Vengan rápido</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('😨 Estoy asustado / Resguardado')" style="white-space: nowrap; flex-shrink: 0; background: #fef3c7; border: 1px solid #fde68a; color: #b45309; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">😨 Estoy resguardado</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚶 El sospechoso se retiró')" style="white-space: nowrap; flex-shrink: 0; background: #e2e8f0; border: 1px solid #cbd5e1; color: #475569; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚶 Sospechoso se fue</button>
+                            <button class="chat-chip" onclick="window.enviarFraseRapidaChat('🚑 Se necesita ambulancia de urgencia')" style="white-space: nowrap; flex-shrink: 0; background: #ecfdf5; border: 1px solid #a7f3d0; color: #047857; font-size: 0.75rem; padding: 8px 12px; border-radius: 20px; font-weight: bold; cursor: pointer; outline: none; -webkit-tap-highlight-color: transparent;">🚑 Requiere ambulancia</button>
+                        </div>
+                    </div>
+                </div>
             </div>
 
-            <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none;">
-                <h2>Mi Perfil 👤</h2>
-                <p style="color: var(--texto-mutado); margin-top: 4px;">Datos de identificación del ciudadano</p>
+            <div id="subview-perfil" class="subview-container" style="flex-grow: 1; display: none; flex-direction: column; gap: 15px;">
+                <!-- Tarjeta del Ciudadano -->
+                <div style="background: white; border-radius: 12px; padding: 15px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px rgba(0,0,0,0.02);">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 12px;">
+                        <div id="perfil-avatar" style="width: 45px; height: 45px; background: var(--verde-carabinero); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; font-weight: bold;">--</div>
+                        <div>
+                            <h3 id="perfil-nombre" style="font-size: 1rem; font-weight: 700; margin: 0;">Cargando...</h3>
+                            <p id="perfil-rut" style="font-size: 0.8rem; color: var(--texto-mutado); margin: 2px 0 0 0;">RUT: --</p>
+                        </div>
+                    </div>
+                    <div style="border-top: 1px solid #e2e8f0; padding-top: 10px; font-size: 0.8rem; color: var(--texto-oscuro);">
+                        <p style="margin: 0;"><strong>Tipo de Cuenta:</strong> Ciudadano (Persona Sorda)</p>
+                    </div>
+                </div>
+
+                <!-- Formulario Contacto de Confianza -->
+                <div style="background: white; border-radius: 12px; padding: 15px; border: 1px solid #cbd5e1; display: flex; flex-direction: column; gap: 8px;">
+                    <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--verde-carabinero); margin: 0 0 4px 0;">📞 Contacto de Confianza (Red de Apoyo)</h4>
+                    <div class="form-group-movil" style="margin-bottom: 6px; gap: 2px; flex-direction: column; display: flex;">
+                        <label style="font-size: 0.75rem; font-weight: 600;">Nombre del Contacto</label>
+                        <input type="text" id="perfil-contacto-nombre" placeholder="Ej: Mamá" style="padding: 8px 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #cbd5e1; background: white; color: var(--texto-oscuro);">
+                    </div>
+                    <div class="form-group-movil" style="margin-bottom: 6px; gap: 2px; flex-direction: column; display: flex;">
+                        <label style="font-size: 0.75rem; font-weight: 600;">Correo para Alertas SOS</label>
+                        <input type="email" id="perfil-contacto-correo" placeholder="ejemplo@correo.com" style="padding: 8px 10px; font-size: 0.85rem; border-radius: 6px; border: 1px solid #cbd5e1; background: white; color: var(--texto-oscuro);">
+                    </div>
+                    <button onclick="window.guardarContactoConfianza(event)" class="btn-submit-institucional" style="padding: 8px; font-size: 0.85rem; border-radius: 6px; margin-top: 4px; width: 100%;">💾 Guardar Contacto</button>
+                </div>
+
+                <!-- Historial de emergencias -->
+                <div style="flex-grow: 1; display: flex; flex-direction: column; gap: 8px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                        <h4 style="font-size: 0.95rem; font-weight: 700; margin: 0;">Mis Urgencias</h4>
+                        <button onclick="window.cargarHistorialAlertasCiudadano()" style="background: none; border: none; color: var(--verde-carabinero); cursor: pointer; font-size: 1rem; padding: 2px;"><i class="fa-solid fa-rotate-right"></i></button>
+                    </div>
+                    <div id="historial-sos-lista" style="display: flex; flex-direction: column; gap: 8px; overflow-y: auto; max-height: 180px; padding-bottom: 5px; width: 100%;">
+                        <p style="color: var(--texto-mutado); font-size: 0.85rem; text-align: center; margin-top: 10px;">Cargando historial...</p>
+                    </div>
+                </div>
+                <!-- Botón de Cerrar Sesión (HU-PERSISTENCIA) -->
+                <button onclick="window.cerrarSesionMovil()" style="background: none; border: none; color: #ef4444; font-weight: bold; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; margin-top: 10px; width: 100%; padding: 8px; -webkit-tap-highlight-color: transparent;">
+                    <i class="fa-solid fa-right-from-bracket"></i> Cerrar Sesión
+                </button>
             </div>
 
             <nav class="bottom-nav-movil">
                 <a href="#" id="nav-sos" class="nav-item-movil active" onclick="window.navegarApp('sos')"><i class="fa-solid fa-circle-exclamation" style="font-size: 1.4rem;"></i><span>Emergencia</span></a>
-                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-hand-holding-hand" style="font-size: 1.4rem;"></i><span>Delitos Menores</span></a>
+                <a href="#" id="nav-video" class="nav-item-movil" onclick="window.navegarApp('video')"><i class="fa-solid fa-comments" style="font-size: 1.4rem;"></i><span>Chat CENCO</span></a>
                 <a href="#" id="nav-perfil" class="nav-item-movil" onclick="window.navegarApp('perfil')"><i class="fa-solid fa-user" style="font-size: 1.4rem;"></i><span>Mi Perfil</span></a>
             </nav>
         </div>
 
+        <!-- Pantalla Camuflada (Falso Apagado) -->
+        <div id="pantalla-camuflada" class="pantalla-negra-camuflaje" style="display: none;"></div>
+
+    </div>
+
+    <!-- 🗂️ DRAWER DE REPORTAR DELITOS MENORES (MOCK FIGMA COPIED) -->
+    <div id="drawer-delitos-menores" class="drawer-backdrop" onclick="window.cerrarDrawerDelitoMenorExterno(event)">
+        <div class="drawer-content">
+            <!-- HEADER -->
+            <div class="drawer-header">
+                <div style="text-align: left;">
+                    <h3 id="drawer-titulo" style="font-size: 1.1rem; font-weight: bold; margin: 0; color: var(--texto-oscuro);">Seleccionar Delito</h3>
+                    <p id="drawer-subtitulo" style="font-size: 0.75rem; color: var(--texto-mutado); margin: 2px 0 0 0;">¿Qué tipo de incidente desea reportar?</p>
+                </div>
+                <button onclick="window.cerrarDrawerDelitoMenor()" style="background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; color: var(--texto-mutado); font-weight: bold; font-size: 0.95rem;">✕</button>
+            </div>
+
+            <!-- BODY -->
+            <div class="drawer-body" id="drawer-cuerpo-dinamico">
+                <!-- VISTA 1: Lista de Delitos (Cargada dinámicamente) -->
+                <div id="view-lista-delitos" class="crime-grid">
+                    <!-- Cards will be drawn dynamically via JS -->
+                </div>
+                
+                <!-- VISTA 2: Formulario del Delito (Oculta por defecto) -->
+                <div id="view-formulario-delito" style="display: none; flex-direction: column; gap: 15px;">
+                    <!-- Video explicativo LSCh simulado -->
+                    <div style="width: 100%; border-radius: 12px; overflow: hidden; background: #1a1f36; aspect-ratio: 16/9; position: relative;">
+                        <!-- Imagen representativa de lenguaje de señas -->
+                        <img id="crime-video-thumb" src="" style="width: 100%; height: 100%; object-fit: cover; opacity: 0.55;" alt="Señas explicativas">
+                        <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center;">
+                            <div style="width: 48px; height: 48px; background: rgba(0,0,0,0.5); border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; font-size: 1.5rem; cursor: pointer; border: 1px solid rgba(255,255,255,0.2);"><i class="fa-solid fa-play" style="margin-left: 3px;"></i></div>
+                        </div>
+                        <div style="position: absolute; bottom: 8px; left: 8px; background: rgba(0,0,0,0.6); backdrop-filter: blur(2px); border-radius: 20px; padding: 4px 10px; display: flex; align-items: center; gap: 6px; font-size: 0.65rem; color: white;">
+                            <i class="fa-solid fa-closed-captioning" style="color: #93c5fd;"></i> Explicación en LSCh
+                        </div>
+                    </div>
+
+                    <!-- Descripción del delito -->
+                    <div style="background: #eff6ff; border: 1px solid #dbeafe; border-radius: 12px; padding: 12px; font-size: 0.8rem; color: #1e40af; line-height: 1.4; text-align: center;" id="crime-detalles-desc">
+                        Sustracción repentina de sus pertenencias...
+                    </div>
+
+                    <!-- Inputs del reporte -->
+                    <div style="display: flex; flex-direction: column; gap: 10px;">
+                        <!-- 1. Descripción textual -->
+                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--texto-oscuro); display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 18px; height: 18px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569;">1</span>
+                                Describa lo sucedido (Texto)
+                            </label>
+                            <textarea id="crime-descripcion-texto" placeholder="Escriba aquí los detalles de lo ocurrido..." style="width: 100%; height: 75px; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem; resize: none; background: white; color: var(--texto-oscuro);"></textarea>
+                        </div>
+
+                        <!-- Separador -->
+                        <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin: 5px 0;">
+                            <div style="height: 1px; background: #e2e8f0; flex-grow: 1;"></div>
+                            <span style="font-size: 0.65rem; color: var(--texto-mutado); font-weight: 700; text-transform: uppercase;">O si prefiere</span>
+                            <div style="height: 1px; background: #e2e8f0; flex-grow: 1;"></div>
+                        </div>
+
+                        <!-- 2. Grabar video en señas (Alternativa A) -->
+                        <div style="display: flex; flex-direction: column; gap: 6px;">
+                            <label style="font-size: 0.75rem; font-weight: 700; color: var(--texto-oscuro); display: flex; align-items: center; gap: 6px;">
+                                <span style="width: 18px; height: 18px; background: #e2e8f0; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; color: #475569;">2</span>
+                                Explicación en Lenguaje de Señas (LSCh)
+                            </label>
+                            
+                            <!-- Contenedores de Video para Grabación Directa -->
+                            <div id="camera-record-container" style="display: none; flex-direction: column; gap: 8px; width: 100%; border-radius: 12px; overflow: hidden; background: #000; position: relative;">
+                                <video id="camera-live-stream" autoplay muted playsinline style="width: 100%; aspect-ratio: 4/3; object-fit: cover; transform: scaleX(-1);"></video>
+                                <video id="camera-playback-preview" controls style="width: 100%; aspect-ratio: 4/3; object-fit: cover; display: none;"></video>
+                                
+                                <!-- Indicador de Grabando -->
+                                <div id="recording-badge" style="display: none; position: absolute; top: 10px; left: 10px; background: rgba(239, 68, 68, 0.9); color: white; padding: 4px 8px; border-radius: 20px; font-size: 0.65rem; font-weight: bold; align-items: center; gap: 6px; z-index: 10;">
+                                    <span style="width: 8px; height: 8px; background: white; border-radius: 50%;"></span> GRABANDO <span id="recording-timer">0s</span>
+                                </div>
+                            </div>
+
+                            <!-- Botón de Control de la Cámara (Grabar Señas) -->
+                            <button id="btn-camera-toggle" type="button" onclick="window.toggleCameraRecording()" style="width: 100%; border: 1px solid var(--verde-carabinero); border-radius: 10px; background: #f0fdf4; color: var(--verde-carabinero); padding: 12px; font-size: 0.8rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; outline: none; -webkit-tap-highlight-color: transparent;">
+                                <i class="fa-solid fa-camera"></i> <span id="lbl-camera-toggle">Grabar Señas en Vivo</span>
+                            </button>
+
+                            <!-- Nota de límite de tiempo (Ley 21719) -->
+                            <div style="font-size: 0.65rem; color: #b45309; background: #fffbeb; border: 1px solid #fef3c7; border-radius: 8px; padding: 6px 10px; text-align: center; font-weight: 600; line-height: 1.3; margin: 2px 0;">
+                                ⏱️ Máximo 15 segundos por grabación para garantizar una transmisión rápida de la emergencia.
+                            </div>
+
+                            <!-- Botón de Grabación Secundaria (Sólo visible al activar cámara) -->
+                            <button id="btn-camera-action" type="button" onclick="window.handleCameraAction()" style="display: none; width: 100%; border: none; border-radius: 8px; background: #ef4444; color: white; padding: 10px; font-size: 0.75rem; font-weight: 700; cursor: pointer; align-items: center; justify-content: center; gap: 6px; outline: none; -webkit-tap-highlight-color: transparent;"></button>
+                        </div>
+
+                        <div style="font-size: 0.75rem; color: var(--texto-mutado); font-weight: 500; text-align: center; margin-top: -5px;" id="txt-video-status">
+                            Ningún video seleccionado o grabado
+                        </div>
+
+                        <!-- Botón de Envío -->
+                        <button id="btn-enviar-delito" onclick="window.enviarReporteDelitoMenor(event)" class="btn-submit-institucional" style="padding: 12px; font-size: 0.9rem; font-weight: 700; border-radius: 10px; margin-top: 10px; width: 100%;">Enviar Reporte</button>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
     <script src="app.js"></script>
 </body>
 </html>
