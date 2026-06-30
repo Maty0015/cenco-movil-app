@@ -28,8 +28,9 @@
             <div class="login-body-movil">
                 <form onsubmit="window.procesarLoginMovil(event)">
                     <div class="form-group-movil">
-                        <label>Correo Electrónico</label>
-                        <input type="email" id="movil-email" value="juan.perez@email.com" required>
+                        <label>RUT Ciudadano</label>
+                        <input type="text" id="movil-rut" placeholder="Ej: 12.345.678-9" required style="transition: border-color 0.2s;">
+                        <span id="movil-rut-feedback" style="font-size: 0.75rem; font-weight: bold; margin-top: 4px; display: block; height: 16px;"></span>
                     </div>
                     <div class="form-group-movil">
                         <label>Contraseña</label>

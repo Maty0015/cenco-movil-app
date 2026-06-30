@@ -71,12 +71,13 @@ const DURACION_PRESION = 3000; // 3000 milisegundos = 3 segundos
 let USUARIO_SESION = null;
 
 /**
- * 🔐 Función de Control de Acceso Inicial
+ * 🔐 Función de Control de Acceso
  */
 window.procesarLoginMovil = async function(event) {
     event.preventDefault();
 
-    const email = document.getElementById('movil-email').value.trim();
+    const rutRaw = document.getElementById('movil-rut').value;
+    const rut = window.formatearRut(rutRaw);
     const pass = document.getElementById('movil-pass').value;
 
     const btnSubmit = event.target.querySelector('button');
@@ -84,16 +85,24 @@ window.procesarLoginMovil = async function(event) {
     btnSubmit.innerText = "Verificando...";
     btnSubmit.disabled = true;
 
+    // Verificar si el RUT es válido antes de consultar Supabase
+    if (!window.validarRutChileno(rut)) {
+        window.mostrarNotificacionToast("⚠️", "RUT Inválido", "Por favor ingresa un RUT chileno válido.");
+        btnSubmit.innerText = textoOriginal;
+        btnSubmit.disabled = false;
+        return;
+    }
+
     try {
-        // Consultar el perfil del ciudadano en Supabase
+        // Consultar el perfil del ciudadano en Supabase por su RUT
         const { data: usuario, error } = await supabaseClient
             .from('perfiles_ciudadanos')
             .select('*')
-            .eq('correo', email)
+            .eq('rut', rut)
             .single();
 
         if (error || !usuario) {
-            window.mostrarNotificacionToast("❌", "Error de Acceso", "Usuario no registrado en la base de datos.");
+            window.mostrarNotificacionToast("❌", "Error de Acceso", "RUT no registrado en la base de datos.");
             btnSubmit.innerText = textoOriginal;
             btnSubmit.disabled = false;
             return;
@@ -101,7 +110,21 @@ window.procesarLoginMovil = async function(event) {
 
         // Validación de contraseña dinámica desde Supabase
         if (pass === (usuario.contrasena || 'password123')) {
-            USUARIO_SESION = usuario; // Asignar la sesión viva
+            // Generar nuevo token único de sesión única
+            const nuevoToken = "tok_" + Math.random().toString(36).substring(2) + Date.now().toString(36);
+            
+            // Guardar token en Supabase
+            const { error: errToken } = await supabaseClient
+                .from('perfiles_ciudadanos')
+                .update({ token_sesion: nuevoToken })
+                .eq('rut', usuario.rut);
+
+            if (errToken) {
+                console.error("Error al registrar token de sesión:", errToken.message);
+            }
+
+            usuario.token_sesion = nuevoToken;
+            USUARIO_SESION = usuario; // Asignar la sesión viva con su token
             guardarSesionEncriptada(usuario); // Guardar de forma encriptada (Ley 21719)
             
             wrapperLoginMovil.style.display = "none";
@@ -113,8 +136,8 @@ window.procesarLoginMovil = async function(event) {
             window.mostrarNotificacionToast("🔑", "Contraseña Incorrecta", "La contraseña ingresada es inválida.");
         }
     } catch (err) {
-        console.error(err);
-        window.mostrarNotificacionToast("🔌", "Error de Red", "No se pudo conectar con el servidor.");
+        console.error("❌ ERROR DETECTADO EN LOGIN:", err);
+        window.mostrarNotificacionToast("🔌", "Error", err.message || JSON.stringify(err));
     } finally {
         btnSubmit.innerText = textoOriginal;
         btnSubmit.disabled = false;
@@ -284,12 +307,27 @@ window.guardarContactoConfianza = async function(event) {
 /**
  * 🔊 Escuchar en Tiempo Real si Carabineros cambia el estado de mis emergencias
  */
+let channelAlertasRealtime = null;
+let channelPerfilRealtime = null;
+
 function escucharEstadoAlertasRealtime() {
+    if (!USUARIO_SESION) return;
+
+    // Remover canales existentes antes de volver a suscribir
+    if (channelAlertasRealtime) {
+        supabaseClient.removeChannel(channelAlertasRealtime);
+        channelAlertasRealtime = null;
+    }
+    if (channelPerfilRealtime) {
+        supabaseClient.removeChannel(channelPerfilRealtime);
+        channelPerfilRealtime = null;
+    }
+
     console.log("🟢 Celular escuchando cambios de estado en tiempo real...");
     
     // 1. Escuchar cambios de estado en alertas
-    supabaseClient
-        .channel('cambios-estado-ciudadano')
+    channelAlertasRealtime = supabaseClient
+        .channel('cambios_estado_ciudadano_' + USUARIO_SESION.rut.replace(/[^a-zA-Z0-9]/g, ''))
         .on('postgres_changes', { 
             event: 'UPDATE', 
             schema: 'public', 
@@ -317,20 +355,36 @@ function escucharEstadoAlertasRealtime() {
                     window.cargarHistorialAlertasCiudadano();
                 }
             }
-        })
-        .subscribe();
+        });
+        
+    channelAlertasRealtime.subscribe();
 
     // 2. Escuchar cambios en el perfil del ciudadano para bloqueo anti-pitanza
-    if (USUARIO_SESION) {
-        supabaseClient
-            .channel('perfil-ciudadano-realtime')
-            .on('postgres_changes', {
-                event: 'UPDATE',
-                schema: 'public',
-                table: 'perfiles_ciudadanos'
-            }, (payload) => {
-                if (payload.new && payload.new.rut === USUARIO_SESION.rut) {
-                    console.log("👤 MI PERFIL ACTUALIZADO:", payload.new);
+    const canalNombre = 'perfil_ciudadano_' + USUARIO_SESION.rut.replace(/[^a-zA-Z0-9]/g, '');
+    console.log("🟢 Suscribiendo al canal de perfil único:", canalNombre);
+    
+    channelPerfilRealtime = supabaseClient
+        .channel(canalNombre)
+        .on('postgres_changes', {
+            event: 'UPDATE',
+            schema: 'public',
+            table: 'perfiles_ciudadanos'
+        }, (payload) => {
+            if (payload.new && payload.new.rut === USUARIO_SESION.rut) {
+                console.log("👤 MI PERFIL ACTUALIZADO:", payload.new);
+                
+                // Validar sesión única (si iniciaron sesión en otro dispositivo)
+                if (payload.new.token_sesion && payload.new.token_sesion !== USUARIO_SESION.token_sesion) {
+                    console.log("⚠️ Sesión cerrada remota por inicio de sesión en otro dispositivo.");
+                    window.mostrarNotificacionToast("⚠️", "Sesión Expirada", "Se ha iniciado sesión en otro dispositivo. Cerrando sesión...");
+                    setTimeout(() => {
+                        window.cerrarSesionMovil();
+                    }, 2500);
+                    return;
+                }
+                
+                // Solo actuar si el estado de bloqueo cambió realmente
+                if (payload.new.es_bloqueado !== USUARIO_SESION.es_bloqueado) {
                     USUARIO_SESION.es_bloqueado = payload.new.es_bloqueado;
                     
                     const btnSos = document.getElementById('btn-sos-radial');
@@ -346,9 +400,10 @@ function escucharEstadoAlertasRealtime() {
                         }
                     }
                 }
-            })
-            .subscribe();
-    }
+            }
+        });
+        
+    channelPerfilRealtime.subscribe();
 }
 
 /**
@@ -1093,9 +1148,25 @@ window.cerrarSesionMovil = function() {
     wrapperPlataformaMovil.style.display = "none";
     wrapperLoginMovil.style.display = "flex";
     
-    // Limpiar inputs
-    document.getElementById('movil-email').value = "";
-    document.getElementById('movil-pass').value = "";
+    // Limpiar inputs de forma segura para evitar crashes de referencias nulas
+    const inputEmail = document.getElementById('movil-email');
+    if (inputEmail) inputEmail.value = "";
+    
+    const inputRut = document.getElementById('movil-rut');
+    if (inputRut) inputRut.value = "";
+    
+    const inputPass = document.getElementById('movil-pass');
+    if (inputPass) inputPass.value = "";
+    
+    // Limpiar feedback del RUT
+    const feedbackRut = document.getElementById('movil-rut-feedback');
+    if (feedbackRut) {
+        feedbackRut.innerText = "";
+    }
+    const inputRutEl = document.getElementById('movil-rut');
+    if (inputRutEl) {
+        inputRutEl.style.borderColor = "";
+    }
     
     window.mostrarNotificacionToast("🔑", "Sesión Cerrada", "Has cerrado tu sesión con éxito.");
 };
@@ -1366,3 +1437,106 @@ if (pantallaCamuflada) {
     pantallaCamuflada.addEventListener('click', detectarDobleToque);
     pantallaCamuflada.addEventListener('touchstart', detectarDobleToque);
 }
+
+/**
+ * 🇨🇱 Validación de RUT Chileno (Algoritmo Módulo 11)
+ */
+window.validarRutChileno = function(rutCompleto) {
+    if (!rutCompleto) return false;
+    let valor = rutCompleto.replace(/\./g, '').replace(/-/g, '').trim();
+    
+    // Excepciones para cuentas de prueba del informe académico
+    if (valor === "123456789" || valor === "987654321") {
+        return true;
+    }
+
+    if (valor.length < 8) return false;
+    
+    let cuerpo = valor.slice(0, -1);
+    let dv = valor.slice(-1).toUpperCase();
+    
+    if (!cuerpo.match(/^[0-9]+$/)) return false;
+    
+    let suma = 0;
+    let multiplo = 2;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+        suma += multiplo * parseInt(cuerpo.charAt(i));
+        multiplo = (multiplo === 7) ? 2 : multiplo + 1;
+    }
+    
+    let dvEsperado = 11 - (suma % 11);
+    if (dvEsperado === 11) dvEsperado = '0';
+    else if (dvEsperado === 10) dvEsperado = 'K';
+    else dvEsperado = dvEsperado.toString();
+    
+    return dv === dvEsperado;
+};
+
+/**
+ * 📝 Formateador automático de RUT (Puntos y Guion)
+ */
+window.formatearRut = function(rut) {
+    let valor = rut.replace(/\./g, '').replace(/-/g, '').replace(/\s+/g, '').trim();
+    if (valor.length < 2) return valor;
+    
+    let cuerpo = valor.slice(0, -1);
+    let dv = valor.slice(-1).toUpperCase();
+    
+    // Solo dejar números en el cuerpo
+    cuerpo = cuerpo.replace(/[^0-9]/g, '');
+    if (!cuerpo) return dv;
+
+    // Formatear cuerpo con puntos
+    let cuerpoFormateado = "";
+    let cont = 0;
+    for (let i = cuerpo.length - 1; i >= 0; i--) {
+        cuerpoFormateado = cuerpo.charAt(i) + cuerpoFormateado;
+        cont++;
+        if (cont === 3 && i > 0) {
+            cuerpoFormateado = "." + cuerpoFormateado;
+            cont = 0;
+        }
+    }
+    return cuerpoFormateado + "-" + dv;
+};
+
+// Listener para retroalimentación visual en tiempo real al escribir el RUT
+window.addEventListener('DOMContentLoaded', () => {
+    const inputRut = document.getElementById('movil-rut');
+    const feedback = document.getElementById('movil-rut-feedback');
+
+    if (inputRut && feedback) {
+        inputRut.addEventListener('input', (e) => {
+            let cursorPosition = e.target.selectionStart;
+            let originalLength = e.target.value.length;
+            
+            let value = e.target.value;
+            if (!value.trim()) {
+                inputRut.style.borderColor = "";
+                feedback.innerText = "";
+                return;
+            }
+
+            // Formatear
+            let formatted = window.formatearRut(value);
+            e.target.value = formatted;
+
+            // Mantener posición del cursor tras formateo
+            let newLength = formatted.length;
+            let diff = newLength - originalLength;
+            e.target.setSelectionRange(cursorPosition + diff, cursorPosition + diff);
+
+            // Validar y dar feedback visual
+            const esValido = window.validarRutChileno(formatted);
+            if (esValido) {
+                inputRut.style.borderColor = "#10b981"; // Verde Carabineros
+                feedback.style.color = "#10b981";
+                feedback.innerHTML = '<i class="fa-solid fa-circle-check"></i> RUT Válido';
+            } else {
+                inputRut.style.borderColor = "#ef4444"; // Rojo Crítico
+                feedback.style.color = "#ef4444";
+                feedback.innerHTML = '<i class="fa-solid fa-triangle-exclamation"></i> RUT Inválido';
+            }
+        });
+    }
+});
